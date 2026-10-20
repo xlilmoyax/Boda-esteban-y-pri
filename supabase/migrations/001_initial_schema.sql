@@ -124,6 +124,17 @@ create table if not exists public.content_sections (
   updated_at timestamptz not null default now()
 );
 
+-- Datos iniciales: reglas de precios del evento (confirmados de Canva)
+-- Adulto desde el comienzo: $130.000
+-- Niño 2 a 10 años: $50.000 (cualquier horario)
+-- Adulto después del almuerzo: $70.000
+insert into public.pricing_rules (category, label, description, min_age, max_age, price, currency, applies_after_lunch, active)
+values
+  ('adulto', 'Adulto desde el comienzo', 'Adulto que asiste desde el comienzo del evento', 11, null, 130000.00, 'ARS', false, true),
+  ('nino', 'Niño', 'Niño de 2 a 10 años, cualquier horario', 2, 10, 50000.00, 'ARS', false, true),
+  ('post-almuerzo', 'Adulto después del almuerzo', 'Adulto que se incorpora después del almuerzo', 11, null, 70000.00, 'ARS', true, true)
+on conflict do nothing;
+
 -- =============================================
 -- ÍNDICES
 -- =============================================

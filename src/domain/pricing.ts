@@ -2,56 +2,64 @@
  * Módulo de dominio: reglas de precios del evento de casamiento.
  * Todas las funciones son puras, tipadas y testeables.
  * No depende del navegador ni de Supabase.
+ *
+ * Reglas de negocio confirmadas (fuente: tarjeta original de Canva / video):
+ * - Niño de 2 a 10 años (inclusive): $50.000, independientemente del horario.
+ * - Adulto que asiste desde el comienzo: $130.000.
+ * - Adulto que se incorpora después del almuerzo: $70.000.
+ *
+ * Reglas pendientes de verificación en la tarjeta original:
+ * - Menores de 2 años: categoría y precio no definidos.
+ * - Límite inferior de "adulto": no especificado (configurable).
+ *
+ * Esta función usa las reglas vigentes pasadas como parámetro para no
+ * acoplar precios hardcodeados. Los valores se cargan desde pricing_rules.
  */
 
 import type { PriceRule, Attendee, CalculationResult, PriceCategoryId } from '../types';
 
 /**
- * Categoría de edad aplicable a un asistente.
- * Reglas de negocio:
- * - bebé: 0 a 2 años (inclusive) → exento
- * - niño: 3 a 12 años (inclusive) → precio infantil
- * - adulto: 13 años en adelante → precio adulto
- * - post-almuerzo: se incorpora después del almuerzo → precio reducido (aplica sobre cualquier edad)
+ * Determina la categoría de precio aplicable a un asistente.
+ * Prioridad:
+ * 1. Niño (2-10 años) → siempre $50.000, incluso después del almuerzo.
+ * 2. Adulto después del almuerzo → $70.000.
+ * 3. Adulto desde el comienzo → $130.000.
+ * 4. Menor de 2 años → sin categoría definida (devuelve null).
  *
- * NOTA: Los importes y rangos exactos deben extraerse de Canva y cargarse
- * en la tabla pricing_rules. Esta función usa las reglas vigentes pasadas
- * como parámetro para no acoplar precios hardcodeados.
+ * No se asignan dos categorías a una misma persona.
  */
 export function classifyAttendee(
   age: number,
   afterLunch: boolean,
   rules: PriceRule[]
-): { categoryId: PriceCategoryId; rule: PriceRule | null } {
-  const adultRule = rules.find((r) => r.category_id === 'adulto' && r.active);
-  const childRule = rules.find((r) => r.category_id === 'nino' && r.active);
-  const babyRule = rules.find((r) => r.category_id === 'bebe' && r.active);
+): { categoryId: PriceCategoryId | null; rule: PriceRule | null } {
+  const childRule = rules.find((r) => r.category === 'nino' && r.active);
   const postLunchRule = rules.find(
-    (r) => r.category_id === 'post-almuerzo' && r.active
+    (r) => r.category === 'post-almuerzo' && r.active
   );
+  const adultRule = rules.find((r) => r.category === 'adulto' && r.active);
 
-  // Si es post-almuerzo y existe regla específica, priorizarla
+  // 1. Niño de 2 a 10 años: prioridad absoluta, cualquiera sea el horario
+  if (
+    childRule &&
+    age >= (childRule.min_age ?? 2) &&
+    age <= (childRule.max_age ?? 10)
+  ) {
+    return { categoryId: 'nino', rule: childRule };
+  }
+
+  // 2. Adulto después del almuerzo (solo aplica a adultos, no a niños)
   if (afterLunch && postLunchRule) {
     return { categoryId: 'post-almuerzo', rule: postLunchRule };
   }
 
-  // Bebé: 0-2
-  if (babyRule && age >= (babyRule.min_age ?? 0) && age <= (babyRule.max_age ?? 2)) {
-    return { categoryId: 'bebe', rule: babyRule };
-  }
-
-  // Niño: 3-12
-  if (childRule && age >= (childRule.min_age ?? 3) && age <= (childRule.max_age ?? 12)) {
-    return { categoryId: 'nino', rule: childRule };
-  }
-
-  // Adulto: 13+
-  if (adultRule && age >= (adultRule.min_age ?? 13)) {
+  // 3. Adulto desde el comienzo
+  if (adultRule && age >= (adultRule.min_age ?? 11)) {
     return { categoryId: 'adulto', rule: adultRule };
   }
 
-  // Fallback: adulto si no hay regla específica
-  return { categoryId: 'adulto', rule: adultRule ?? null };
+  // 4. Sin categoría definida (menor de 2 años o fuera de rango)
+  return { categoryId: null, rule: null };
 }
 
 /**
@@ -60,10 +68,14 @@ export function classifyAttendee(
 export function calculateIndividualPrice(
   attendee: Attendee,
   rules: PriceRule[]
-): { categoryId: PriceCategoryId; price: number; rule: PriceRule | null } {
+): { categoryId: PriceCategoryId | null; price: number; rule: PriceRule | null } {
   const age = attendee.age_at_event ?? 0;
-  const { categoryId, rule } = classifyAttendee(age, Boolean(attendee.after_lunch), rules);
-  const price = rule ? rule.price : 0;
+  const { categoryId, rule } = classifyAttendee(
+    age,
+    Boolean(attendee.after_lunch),
+    rules
+  );
+  const price = rule ? Number(rule.price) : 0;
   return { categoryId, price, rule };
 }
 
@@ -80,7 +92,7 @@ export function calculateGroupTotal(
       attendee_id: a.id,
       name: a.name,
       surname: a.surname,
-      category: rule?.label ?? categoryId,
+      category: rule?.label ?? (categoryId ?? 'sin-definir'),
       price,
       after_lunch: Boolean(a.after_lunch),
     };

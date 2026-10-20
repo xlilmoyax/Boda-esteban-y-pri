@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertCircle, CheckCircle, Loader2, Phone } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { calculateGroupTotal } from '../domain/pricing';
 import type { Attendee } from '../types';
 
@@ -10,17 +10,30 @@ interface ConfirmacionViewProps {
 export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) {
   const [step, setStep] = useState<'form' | 'success' | 'error'>('form');
   const [attendees, setAttendees] = useState<Attendee[]>([
-    { id: '1', guest_id: '', name: '', surname: '', birth_date: null, age_at_event: null, category_id: null, price_applied: 0, after_lunch: false, created_at: '', updated_at: '' },
+    { id: '1', guest_id: '', name: '', surname: '', birth_date: null, age_at_event: null, category: null, price_applied: 0, after_lunch: false, created_at: '', updated_at: '' },
   ]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [afterLunchGroup, setAfterLunchGroup] = useState(false);
   const [calculation, setCalculation] = useState<ReturnType<typeof calculateGroupTotal> | null>(null);
+
+  const [guestName, setGuestName] = useState('');
+  const [guestSurname, setGuestSurname] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [attending, setAttending] = useState<'si' | 'no' | ''>('');
+  const [songSuggestion, setSongSuggestion] = useState('');
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [dietaryOther, setDietaryOther] = useState('');
+
+  const btnClass = (active: boolean) =>
+    active
+      ? 'px-4 py-3 rounded-lg border border-[#4A071D] bg-[#4A071D] text-white font-semibold'
+      : 'px-4 py-3 rounded-lg border border-[#672B32]/30 text-[#211916] font-semibold hover:border-[#4A071D]';
 
   const addAttendee = () => {
     setAttendees([
       ...attendees,
-      { id: String(Date.now()), guest_id: '', name: '', surname: '', birth_date: null, age_at_event: null, category_id: null, price_applied: 0, after_lunch: false, created_at: '', updated_at: '' },
+      { id: String(Date.now()), guest_id: '', name: '', surname: '', birth_date: null, age_at_event: null, category: null, price_applied: 0, after_lunch: false, created_at: '', updated_at: '' },
     ]);
   };
 
@@ -33,6 +46,12 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
     recalculate();
   };
 
+  const toggleDietary = (value: string) => {
+    setDietaryRestrictions((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
   const recalculate = () => {
     setCalculation(calculateGroupTotal(attendees, []));
   };
@@ -43,12 +62,19 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
     setError(null);
 
     try {
-      // Validación básica
-      if (attendees.some((a) => !a.name.trim() || !a.surname.trim())) {
+      if (!guestName.trim() || !guestSurname.trim()) {
+        throw new Error('Completá tu nombre y apellido.');
+      }
+      if (!guestEmail.trim()) {
+        throw new Error('Completá tu correo electrónico.');
+      }
+      if (!attending) {
+        throw new Error('Indicá si asistirás o no.');
+      }
+      if (attending === 'si' && attendees.some((a) => !a.name.trim() || !a.surname.trim())) {
         throw new Error('Completá nombre y apellido de todos los asistentes.');
       }
 
-      // Simular persistencia (pendiente de Supabase configurado)
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setStep('success');
@@ -62,18 +88,18 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
 
   if (step === 'success') {
     return (
-      <section className="min-h-screen flex items-center justify-center bg-zinc-50 px-6">
+      <section className="min-h-screen flex items-center justify-center bg-[#F3F0EB] px-6">
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 bg-[#4A071D]/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-[#4A071D]/20">
+            <CheckCircle className="w-8 h-8 text-[#4A071D]" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-zinc-900 mb-4">¡Gracias!</h2>
-          <p className="text-zinc-600 mb-8">
+          <h2 className="text-2xl font-serif font-bold text-[#24130E] mb-4">¡Gracias!</h2>
+          <p className="text-[#211916] mb-8">
             Tu confirmación de asistencia ha sido registrada correctamente. Te esperamos para celebrar con nosotras.
           </p>
           <button
             onClick={() => onNavigate('/')}
-            className="px-6 py-3 text-sm font-semibold text-white bg-amber-900 rounded-full hover:bg-amber-800 transition-colors"
+            className="px-6 py-3 text-sm font-semibold text-white bg-[#4A071D] rounded-full hover:bg-[#672B32] transition-colors"
           >
             Volver al inicio
           </button>
@@ -84,16 +110,16 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
 
   if (step === 'error') {
     return (
-      <section className="min-h-screen flex items-center justify-center bg-zinc-50 px-6">
+      <section className="min-h-screen flex items-center justify-center bg-[#F3F0EB] px-6">
         <div className="max-w-md w-full text-center">
           <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-rose-600" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-zinc-900 mb-4">Error</h2>
-          <p className="text-zinc-600 mb-6">{error}</p>
+          <h2 className="text-2xl font-serif font-bold text-[#24130E] mb-4">Error</h2>
+          <p className="text-[#211916] mb-6">{error}</p>
           <button
             onClick={() => setStep('form')}
-            className="px-6 py-3 text-sm font-semibold text-white bg-amber-900 rounded-full hover:bg-amber-800 transition-colors"
+            className="px-6 py-3 text-sm font-semibold text-white bg-[#4A071D] rounded-full hover:bg-[#672B32] transition-colors"
           >
             Reintentar
           </button>
@@ -103,176 +129,240 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
   }
 
   return (
-    <section className="min-h-screen bg-zinc-50 px-6 py-8">
+    <section className="min-h-screen bg-[#F3F0EB] px-6 py-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-amber-900 mb-2">Confirmar asistencia</h1>
-          <p className="text-zinc-600">Completá los datos de cada persona que asistirá.</p>
+          <h1 className="text-3xl font-serif font-bold text-[#4A071D] mb-2">Confirmar asistencia</h1>
+          <p className="text-[#211916]">Completá los datos de cada persona que asistirá.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
+          <div className="bg-white p-6 rounded-2xl border border-[#4A071D]/20 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <Phone className="w-5 h-5 text-amber-900" />
-              <h2 className="font-serif text-xl font-semibold text-zinc-900">Datos del grupo</h2>
+              <div className="w-8 h-8 bg-[#4A071D]/10 rounded-full flex items-center justify-center text-[#4A071D] font-semibold">1</div>
+              <h2 className="font-serif text-xl font-bold text-[#24130E]">Datos del grupo</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">Tu nombre y apellido</label>
+                <label className="block text-sm font-medium text-[#211916] mb-1">Tu nombre</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                  placeholder="Nombre y apellido"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                  placeholder="Nombre"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-[#211916] mb-1">Tu apellido</label>
+                <input
+                  type="text"
+                  value={guestSurname}
+                  onChange={(e) => setGuestSurname(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                  placeholder="Apellido"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-[#211916] mb-1">Teléfono</label>
                 <input
                   type="tel"
-                  className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
                   placeholder="+54 9 XXX XXX-XXXX"
                 />
               </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-zinc-700 mb-1">Correo electrónico</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                placeholder="tu@email.com"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                id="after-lunch"
-                checked={afterLunchGroup}
-                onChange={(e) => setAfterLunchGroup(e.target.checked)}
-                className="w-4 h-4 text-amber-900 border-zinc-300 rounded focus:ring-amber-500"
-              />
-              <label htmlFor="after-lunch" className="text-sm font-medium text-zinc-700">
-                Alguna persona se incorpora después del almuerzo
-              </label>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-900 font-semibold">1</div>
-              <h2 className="font-serif text-xl font-semibold text-zinc-900">Asistentes</h2>
-            </div>
-
-            {attendees.map((a) => (
-              <div key={a.id} className="p-4 border border-zinc-200 rounded-xl space-y-4">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => removeAttendee(a.id)}
-                    className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-full"
-                    aria-label="Eliminar asistente"
-                  >
-                    ×
-                  </button>
-                  <div className="flex-1">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1">Nombre</label>
-                        <input
-                          type="text"
-                          value={a.name}
-                          onChange={(e) => updateAttendee(a.id, 'name', e.target.value)}
-                          className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-                          placeholder="Nombre"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1">Apellido</label>
-                        <input
-                          type="text"
-                          value={a.surname}
-                          onChange={(e) => updateAttendee(a.id, 'surname', e.target.value)}
-                          className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-                          placeholder="Apellido"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1">Fecha de nacimiento</label>
-                        <input
-                          type="date"
-                          value={a.birth_date ?? ''}
-                          onChange={(e) => updateAttendee(a.id, 'birth_date', e.target.value || null)}
-                          className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1">Edad en el evento</label>
-                        <input
-                          type="number"
-                          value={a.age_at_event ?? ''}
-                          onChange={(e) => updateAttendee(a.id, 'age_at_event', e.target.value ? Number(e.target.value) : null)}
-                          className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1 flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={a.after_lunch}
-                            onChange={(e) => updateAttendee(a.id, 'after_lunch', e.target.checked)}
-                            className="w-4 h-4 text-amber-900"
-                          />
-                          Después del almuerzo
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {calculation && (
-                  <div className="mt-3 pt-3 border-t border-zinc-100">
-                    <span className="text-xs font-semibold text-amber-900">Categoría: {a.category_id ?? 'Pendiente'}</span>
-                    <span className="text-xs text-zinc-500 ml-2">Importe: $0 (pendiente de precios de Canva)</span>
-                  </div>
-                )}
+              <div>
+                <label className="block text-sm font-medium text-[#211916] mb-1">Correo electrónico</label>
+                <input
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                  placeholder="tu@email.com"
+                />
               </div>
-            ))}
+            </div>
 
-            <button
-              type="button"
-              onClick={addAttendee}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-amber-900 bg-amber-50 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
-            >
-              <span className="w-4 h-4">+</span> Agregar otro asistente
-            </button>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#211916] mb-2">¿Asistirás?</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAttending('si')}
+                  className={btnClass(attending === 'si')}
+                >
+                  ¡Claro que voy!
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAttending('no')}
+                  className={btnClass(attending === 'no')}
+                >
+                  En esta oportunidad no podré asistir
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#211916] mb-2">Sugerencia de canción</label>
+              <input
+                type="text"
+                value={songSuggestion}
+                onChange={(e) => setSongSuggestion(e.target.value)}
+                className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                placeholder="Tu canción favorita para la fiesta"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#211916] mb-2">Restricciones alimentarias</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { value: 'celiaquia', label: 'Celiaquía' },
+                  { value: 'vegetariana', label: 'Vegetariana' },
+                  { value: 'vegana', label: 'Vegana' },
+                  { value: 'diabetes', label: 'Diabetes' },
+                ].map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={dietaryRestrictions.includes(opt.value)}
+                      onChange={() => toggleDietary(opt.value)}
+                      className="w-4 h-4 text-[#4A071D] border-[#672B32] rounded focus:ring-[#4A071D]"
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+              <div className="mt-2">
+                <label className="block text-xs font-medium text-[#211916] mb-1">Otra restricción (detalle)</label>
+                <input
+                  type="text"
+                  value={dietaryOther}
+                  onChange={(e) => setDietaryOther(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                  placeholder="Especificá otra restricción"
+                />
+              </div>
+            </div>
           </div>
 
-          {calculation && (
-            <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
-              <h3 className="font-serif text-lg font-bold text-zinc-900 mb-4">Resumen del importe</h3>
+          {attending === 'si' && (
+            <div className="bg-white p-6 rounded-2xl border border-[#4A071D]/20 shadow-sm">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-[#4A071D]/10 rounded-full flex items-center justify-center text-[#4A071D] font-semibold">2</div>
+                <h2 className="font-serif text-xl font-bold text-[#24130E]">Asistentes</h2>
+              </div>
+
+              {attendees.map((a) => (
+                <div key={a.id} className="p-4 border border-[#672B32]/10 rounded-xl space-y-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => removeAttendee(a.id)}
+                      className="p-1.5 text-[#4A071D] hover:bg-[#4A071D]/10 rounded-full"
+                      aria-label="Eliminar asistente"
+                    >
+                      ×
+                    </button>
+                    <div className="flex-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-[#211916] mb-1">Nombre</label>
+                          <input
+                            type="text"
+                            value={a.name}
+                            onChange={(e) => updateAttendee(a.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                            placeholder="Nombre"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#211916] mb-1">Apellido</label>
+                          <input
+                            type="text"
+                            value={a.surname}
+                            onChange={(e) => updateAttendee(a.id, 'surname', e.target.value)}
+                            className="w-full px-3 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                            placeholder="Apellido"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[#211916] mb-1">Edad en el evento</label>
+                          <input
+                            type="number"
+                            value={a.age_at_event ?? ''}
+                            onChange={(e) => updateAttendee(a.id, 'age_at_event', e.target.value ? Number(e.target.value) : null)}
+                            className="w-full px-3 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#211916] mb-1 flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={a.after_lunch}
+                              onChange={(e) => updateAttendee(a.id, 'after_lunch', e.target.checked)}
+                              className="w-4 h-4 text-[#4A071D]"
+                            />
+                            Después del almuerzo
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {calculation && (
+                    <div className="mt-3 pt-3 border-t border-[#672B32]/10">
+                      <span className="text-xs font-semibold text-[#4A071D]">Categoría: {a.category ?? 'Pendiente'}</span>
+                      <span className="text-xs text-[#211916] ml-2">Importe: ${a.price_applied?.toLocaleString('es-AR') ?? 0}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addAttendee}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-[#4A071D] bg-[#F3F0EB] rounded-lg border border-[#4A071D]/20 hover:bg-[#4A071D]/10 transition-colors"
+              >
+                <span className="w-4 h-4">+</span> Agregar otro asistente
+              </button>
+            </div>
+          )}
+
+          {calculation && attending === 'si' && (
+            <div className="bg-[#24130E] p-6 rounded-2xl text-[#F3F0EB] shadow-sm">
+              <h3 className="font-serif text-lg font-bold mb-4">Resumen del importe</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-zinc-600">Total asistentes</span>
+                <div className="flex justify-between border-b border-[#672B32]/30 pb-2">
+                  <span className="text-[#F3F0EB]/80">Total asistentes</span>
                   <span className="font-medium">{calculation.totalAttendees}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-600">Asistentes que abonan</span>
+                <div className="flex justify-between border-b border-[#672B32]/30 pb-2">
+                  <span className="text-[#F3F0EB]/80">Asistentes que abonan</span>
                   <span className="font-medium">{calculation.payingAttendees}</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-zinc-100">
-                  <span className="font-semibold text-zinc-900">Importe total estimado</span>
-                  <span className="font-bold text-amber-900">$0 (pendiente de precios de Canva)</span>
+                <div className="flex justify-between pt-2">
+                  <span className="font-semibold text-[#F3F0EB]">Importe total estimado</span>
+                  <span className="font-bold text-[#B8860B]">${calculation.grandTotal.toLocaleString('es-AR')}</span>
                 </div>
               </div>
+              <p className="mt-4 text-xs text-[#F3F0EB]/60">
+                Los precios son estimados y se confirman al momento del pago.
+              </p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full px-8 py-4 text-lg font-semibold text-white bg-amber-900 rounded-full hover:bg-amber-800 disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+            className="w-full px-8 py-4 text-lg font-semibold text-white bg-[#4A071D] rounded-full hover:bg-[#672B32] disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>
@@ -280,7 +370,7 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
               </>
             ) : (
               <>
-                Confirmar asistencia <ArrowRight className="w-5 h-5" />
+                Confirmar asistencia
               </>
             )}
           </button>
@@ -289,5 +379,3 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
     </section>
   );
 }
-
-import { ArrowRight } from 'lucide-react';

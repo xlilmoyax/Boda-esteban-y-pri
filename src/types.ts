@@ -7,7 +7,7 @@ export type PriceCategoryId = 'adulto' | 'nino' | 'bebe' | 'post-almuerzo';
 
 export interface PriceRule {
   id: string;
-  category_id: PriceCategoryId;
+  category: PriceCategoryId;
   label: string;
   description: string | null;
   min_age: number | null;
@@ -27,7 +27,9 @@ export interface Guest {
   phone: string | null;
   email: string | null;
   attending: boolean | null;
+  song_suggestion: string | null;
   dietary_restrictions: string | null;
+  dietary_other: string | null;
   observations: string | null;
   created_at: string;
   updated_at: string;
@@ -40,7 +42,7 @@ export interface Attendee {
   surname: string;
   birth_date: string | null;
   age_at_event: number | null;
-  category_id: PriceCategoryId | null;
+  category: PriceCategoryId | null;
   price_applied: number | null;
   after_lunch: boolean;
   created_at: string;
