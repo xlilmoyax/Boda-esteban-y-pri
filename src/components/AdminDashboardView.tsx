@@ -1,107 +1,111 @@
+/**
+ * Panel administrativo completo para la tarjeta de casamiento.
+ * Incluye: Resumen, Invitados (CRUD), Pagos, Configuración (precios editables), Auditoría y Exportación CSV.
+ * Todas las operaciones requieren autenticación de admin y respetan RLS.
+ */
+
 import { useState } from 'react';
-import { ArrowLeft, Users, CreditCard, FileText, ShieldAlert, LogOut } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
+import DashboardResume from './admin/DashboardResume';
+import GuestList from './admin/GuestList';
+import PaymentsView from './admin/PaymentsView';
+import EventConfig from './admin/EventConfigView';
+import AuditLogView from './admin/AuditLogView';
+import CSVExport from './admin/CSVExport';
 
 interface AdminDashboardViewProps {
   onNavigate: (path: string) => void;
+  currentAdminId: string | null;
 }
 
-export default function AdminDashboardView({ onNavigate }: AdminDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'resumen' | 'invitados' | 'pagos' | 'configuracion'>('resumen');
-
-  const stats = [
-    { label: 'Grupos registrados', value: '0', icon: <Users className="w-5 h-5" /> },
-    { label: 'Asistentes totales', value: '0', icon: <CreditCard className="w-5 h-5" /> },
-    { label: 'Confirmados', value: '0', icon: <ShieldAlert className="w-5 h-5" /> },
-    { label: 'Pagos verificados', value: '$0', icon: <FileText className="w-5 h-5" /> },
-  ];
+export default function AdminDashboardView({ onNavigate, currentAdminId }: AdminDashboardViewProps) {
+  const [activeTab, setActiveTab] = useState<'resumen' | 'invitados' | 'pagos' | 'configuracion' | 'auditoria' | 'exportacion'>('resumen');
 
   return (
-    <section className="min-h-screen bg-zinc-50 px-6 py-8">
+    <section className="min-h-screen bg-[#F3F0EB] px-6 py-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <button
               onClick={() => onNavigate('/')}
-              className="flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-amber-900 mb-4"
+              className="flex items-center gap-2 text-sm font-medium text-[#211916]/60 hover:text-[#4A071D] mb-4"
             >
               <ArrowLeft className="w-4 h-4" /> Volver a la tarjeta
             </button>
-            <h1 className="text-2xl font-serif font-bold text-zinc-900">Panel de administración</h1>
+            <h1 className="font-serif text-2xl font-bold text-[#24130E]">Panel de administración</h1>
           </div>
           <button
             onClick={() => onNavigate('/login-admin')}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-900 rounded-lg hover:bg-amber-800 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#4A071D] rounded-lg hover:bg-[#672B32] transition-colors"
           >
             <LogOut className="w-4 h-4" /> Cerrar sesión
           </button>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((s) => (
-            <div key={s.label} className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-zinc-500">{s.label}</p>
-                  <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-900">
-                  {s.icon}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-zinc-200 mb-8">
-          {[
-            { key: 'resumen' as const, label: 'Resumen' },
-            { key: 'invitados' as const, label: 'Invitados' },
-            { key: 'pagos' as const, label: 'Pagos' },
-            { key: 'configuracion' as const, label: 'Configuración' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-amber-900 text-amber-900'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-8 min-h-[400px]">
-          {activeTab === 'resumen' && (
-            <div>
-              <h2 className="font-serif text-xl font-bold text-zinc-900 mb-6">Resumen general</h2>
-              <p className="text-zinc-500">No hay datos registrados todavía. Las confirmaciones aparecerán aquí cuando los invitados completen el formulario.</p>
-            </div>
-          )}
-          {activeTab === 'invitados' && (
-            <div>
-              <h2 className="font-serif text-xl font-bold text-zinc-900 mb-6">Gestión de invitados</h2>
-              <p className="text-zinc-500">Lista de grupos y asistentes registrados.</p>
-            </div>
-          )}
-          {activeTab === 'pagos' && (
-            <div>
-              <h2 className="font-serif text-xl font-bold text-zinc-900 mb-6">Gestión de pagos</h2>
-              <p className="text-zinc-500">Avisos de pago informados y verificaciones administrativas.</p>
-            </div>
-          )}
-          {activeTab === 'configuracion' && (
-            <div>
-              <h2 className="font-serif text-xl font-bold text-zinc-900 mb-6">Configuración del evento</h2>
-              <p className="text-zinc-500">Fecha, ubicación, textos, precios y rangos de edad.</p>
-            </div>
-          )}
-        </div>
+        {activeTab === 'resumen' && <DashboardResume />}
+        {activeTab === 'invitados' && <GuestList currentAdminId={currentAdminId} />}
+        {activeTab === 'pagos' && <PaymentsView currentAdminId={currentAdminId} />}
+        {activeTab === 'configuracion' && <EventConfig currentAdminId={currentAdminId} />}
+        {activeTab === 'auditoria' && <AuditLogView />}
+        {activeTab === 'exportacion' && <CSVExport />}
+        {activeTab !== 'resumen' && (
+          <div className="mt-8 bg-white rounded-2xl border border-[#4A071D]/20 shadow-sm p-8 min-h-[400px]">
+            {activeTab === 'invitados' && (
+              <>
+                <h2 className="font-serif text-xl font-bold text-[#24130E] mb-6">Gestión de Invitados</h2>
+                <p className="text-[#211916]/60 mb-4">Lista de grupos y asistentes registrados con búsqueda y filtros.</p>
+              </>
+            )}
+            {activeTab === 'pagos' && (
+              <>
+                <h2 className="font-serif text-xl font-bold text-[#24130E] mb-6">Gestión de Pagos</h2>
+                <p className="text-[#211916]/60 mb-4">Avisos de pago informados, verificación manual y rechazo.</p>
+              </>
+            )}
+            {activeTab === 'configuracion' && (
+              <>
+                <h2 className="font-serif text-xl font-bold text-[#24130E] mb-6">Configuración del Evento</h2>
+                <p className="text-[#211916]/60 mb-4">Fecha, ubicación, precios y datos de transferencia editables.</p>
+              </>
+            )}
+            {activeTab === 'auditoria' && (
+              <>
+                <h2 className="font-serif text-xl font-bold text-[#24130E] mb-6">Historial de Auditoría</h2>
+                <p className="text-[#211916]/60 mb-4">Registro de operaciones administrativas con fecha, hora y responsable.</p>
+              </>
+            )}
+            {activeTab === 'exportacion' && (
+              <>
+                <h2 className="font-serif text-xl font-bold text-[#24130E] mb-6">Exportación CSV</h2>
+                <p className="text-[#211916]/60 mb-4">Descarga de invitados y asistentes con filtros aplicados.</p>
+              </>
+            )}
+          </div>
+        )}
+        {activeTab === 'resumen' && (
+          <div className="flex gap-1 border-b border-[#4A071D]/10 mb-8">
+            {[
+              { key: 'resumen' as const, label: 'Resumen' },
+              { key: 'invitados' as const, label: 'Invitados' },
+              { key: 'pagos' as const, label: 'Pagos' },
+              { key: 'configuracion' as const, label: 'Configuración' },
+              { key: 'auditoria' as const, label: 'Auditoría' },
+              { key: 'exportacion' as const, label: 'Exportar CSV' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.key
+                    ? 'border-[#4A071D] text-[#4A071D]'
+                    : 'border-transparent text-[#211916]/50 hover:text-[#4A071D] hover:bg-[#F3F0EB]/50'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
