@@ -21,10 +21,6 @@ create index if not exists idx_pricing_history_changed_at on public.pricing_hist
 -- Habilitar RLS
 alter table public.pricing_history enable row level security;
 
--- Política: solo admins pueden leer historial de precios
-create policy "pricing_history_admin_select" on public.pricing_history
-  for select using (public.is_admin('editor'));
-
 -- =============================================
 -- Campos adicionales en guests (del formulario de confirmación)
 -- =============================================

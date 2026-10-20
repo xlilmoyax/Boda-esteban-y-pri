@@ -29,25 +29,19 @@ create policy "event_settings_admin_all" on public.event_settings
   for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
 
 -- =============================================
--- guests: lectura pública limitada (solo propios), escritura pública (confirmación), admin todo
+-- guests: escritura pública (confirmación), lectura solo admin
 -- =============================================
 create policy "guests_public_insert_confirmation" on public.guests
   for insert with check (true);
-
-create policy "guests_public_select_own" on public.guests
-  for select using (true);
 
 create policy "guests_admin_all" on public.guests
   for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
 
 -- =============================================
--- attendees: lectura pública limitada, escritura pública (confirmación), admin todo
+-- attendees: escritura pública (confirmación), lectura solo admin
 -- =============================================
 create policy "attendees_public_insert_confirmation" on public.attendees
   for insert with check (true);
-
-create policy "attendees_public_select_own" on public.attendees
-  for select using (true);
 
 create policy "attendees_admin_all" on public.attendees
   for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
@@ -62,13 +56,10 @@ create policy "pricing_rules_admin_all" on public.pricing_rules
   for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
 
 -- =============================================
--- payment_records: lectura pública (propios), escritura pública (informar), admin todo
+-- payment_records: escritura pública (informar), lectura solo admin
 -- =============================================
 create policy "payment_records_public_insert" on public.payment_records
   for insert with check (true);
-
-create policy "payment_records_public_select_own" on public.payment_records
-  for select using (true);
 
 create policy "payment_records_admin_all" on public.payment_records
   for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
@@ -80,10 +71,10 @@ create policy "admin_profiles_select_own" on public.admin_profiles
   for select using (auth.uid() = id);
 
 -- =============================================
--- audit_logs: solo lectura admin, escritura solo service_role
+-- audit_logs: lectura y escritura solo admin (mediante sesión autenticada)
 -- =============================================
-create policy "audit_logs_admin_select" on public.audit_logs
-  for select using (public.is_admin('editor'));
+create policy "audit_logs_admin_all" on public.audit_logs
+  for all using (public.is_admin('editor')) with check (public.is_admin('editor'));
 
 -- =============================================
 -- gallery_images: lectura pública (activas), escritura admin

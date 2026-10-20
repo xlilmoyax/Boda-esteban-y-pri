@@ -26,11 +26,12 @@ as $$
     select
       a.*,
       case
+        -- Niño 2-10 años tiene prioridad absoluta sobre post-almuerzo
+        when a.age_at_event is not null and a.age_at_event between 2 and 10 then 'nino'
         when a.after_lunch then 'post-almuerzo'
         when a.category is not null then a.category
-        when a.age_at_event is not null and a.age_at_event <= 2 then 'bebe'
-        when a.age_at_event is not null and a.age_at_event between 3 and 12 then 'nino'
-        when a.age_at_event is not null and a.age_at_event >= 13 then 'adulto'
+        when a.age_at_event is not null and a.age_at_event <= 1 then 'bebe'
+        when a.age_at_event is not null and a.age_at_event >= 11 then 'adulto'
         else null
       end as determined_category
     from attendees a
@@ -70,6 +71,7 @@ as $$
 $$;
 
 -- Función: registrar auditoría de operación administrativa
+-- Requiere sesión autenticada con rol de admin (verificada por RLS en audit_logs)
 create or replace function public.audit_log(
   p_action text,
   p_table_name text,
