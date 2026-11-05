@@ -1,30 +1,2499 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Lato:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
+:root {
+  font-family: 'Lato', sans-serif;
+  color: #241714;
+  background: #f4f0ea;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  --wine: #48121c;
+  --wine-dark: #310b13;
+  --paper: #f4f0ea;
+  --ink: #241714;
+  --gold: #bd9854;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
+}
+
+body {
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--paper);
+  font-family: 'Lato', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #bd9854;
+  outline-offset: 3px;
+}
+
+::selection {
+  color: white;
+  background: var(--wine);
+}
+
+.wedding-page {
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.wedding-hero {
+  position: relative;
+  display: grid;
+  min-height: min(820px, calc(100svh - 72px));
+  place-items: center;
+  overflow: hidden;
+  color: white;
+  background: var(--wine-dark);
+  isolation: isolate;
+}
+
+.wedding-hero__image,
+.wedding-hero__veil {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+}
+
+.wedding-hero__image {
+  background: url('/images/recuperados/originales/hero-original.jpg') center 44% / cover no-repeat;
+  transform: scale(1.015);
+}
+
+.wedding-hero__veil {
+  background:
+    linear-gradient(180deg, rgb(35 12 15 / 18%) 0%, rgb(35 12 15 / 8%) 34%, rgb(35 12 15 / 64%) 100%),
+    linear-gradient(90deg, rgb(35 12 15 / 18%), transparent 60%);
+}
+
+.wedding-hero__content {
+  display: flex;
+  width: min(100% - 2rem, 900px);
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 1rem 4rem;
+  text-align: center;
+}
+
+.wedding-eyebrow {
+  color: var(--wine);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.wedding-eyebrow--light {
+  color: rgb(255 255 255 / 82%);
+}
+
+.wedding-script {
+  margin: 0;
+  color: var(--wine);
+  font-family: 'Great Vibes', cursive;
+  font-weight: 400;
+}
+
+.wedding-hero__prelude {
+  margin-top: 1.2rem;
+  color: white;
+  font-size: clamp(2rem, 5vw, 3rem);
+  text-shadow: 0 2px 16px rgb(0 0 0 / 22%);
+}
+
+.wedding-hero__names {
+  margin: 0.1rem 0 0;
+  color: white;
+  font-size: clamp(3.7rem, 10vw, 7.2rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 0.96;
+  text-shadow: 0 3px 24px rgb(0 0 0 / 28%);
+}
+
+.wedding-hero__names span {
+  color: #edcf98;
+  font-family: 'Great Vibes', cursive;
+  font-size: 0.82em;
+}
+
+.wedding-hero__caption {
+  margin: 1.1rem 0 0;
+  color: rgb(255 255 255 / 90%);
+  font-size: 0.7rem;
+  letter-spacing: 0.36em;
+}
+
+.wedding-hero__seal {
+  width: clamp(5rem, 12vw, 7rem);
+  height: auto;
+  margin-top: 2.8rem;
+  filter: drop-shadow(0 8px 16px rgb(0 0 0 / 30%));
+}
+
+.wedding-scroll {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-top: 2.3rem;
+  place-items: center;
+  color: white;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 999px;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.wedding-scroll:hover {
+  background: rgb(255 255 255 / 12%);
+  transform: translateY(3px);
+}
+
+.paper-texture {
+  background-color: var(--paper);
+  background-image: linear-gradient(rgb(244 240 234 / 64%), rgb(244 240 234 / 64%)), url('/images/recuperados/originales/paper-texture-original.jpg');
+  background-position: center;
+  background-size: cover;
+}
+
+.wedding-invitation {
+  display: flex;
+  min-height: 430px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem;
+  text-align: center;
+}
+
+.wedding-invitation__hello {
+  margin-top: 0.5rem;
+  font-size: clamp(3rem, 7vw, 5rem);
+}
+
+.wedding-display {
+  margin: 0.3rem 0 0;
+  color: var(--wine);
+  font-size: clamp(2.5rem, 5vw, 4.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+}
+
+.wedding-copy {
+  max-width: 35rem;
+  margin: 1rem auto 0;
+  color: #62534b;
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.wedding-countdown {
+  display: flex;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  margin-top: 2.6rem;
+}
+
+.wedding-countdown__item {
+  display: flex;
+  min-width: 4rem;
+  flex-direction: column;
+  align-items: center;
+  color: var(--wine);
+}
+
+.wedding-countdown__item span {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.3rem, 5vw, 3.4rem);
+  line-height: 1;
+}
+
+.wedding-countdown__item small {
+  margin-top: 0.35rem;
+  color: #806a5b;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.wedding-story {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(2rem, 7vw, 7rem);
+  padding: clamp(4rem, 9vw, 8rem) max(7vw, calc((100vw - 1200px) / 2));
+  color: #f7f0e8;
+  background:
+    radial-gradient(ellipse at 10% 5%, rgb(111 47 55 / 38%), transparent 46%),
+    var(--wine);
+}
+
+.wedding-story__copy {
+  max-width: 32rem;
+}
+
+.wedding-display--light {
+  color: #fff8ef;
+}
+
+.wedding-story__copy > p:not(.wedding-script) {
+  color: rgb(255 248 239 / 78%);
+  font-size: 0.98rem;
+  line-height: 1.9;
+}
+
+.wedding-story__signature {
+  margin-top: 2rem;
+  color: #e4c68f;
+  font-size: 3rem;
+}
+
+.wedding-gallery {
+  display: grid;
+  min-height: 470px;
+  grid-template-columns: 1fr 0.82fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
+}
+
+.wedding-gallery__photo {
+  position: relative;
+  min-height: 0;
+  margin: 0;
+  padding: 0.5rem;
+  background: #f7f0e8;
+  box-shadow: 0 18px 40px rgb(22 4 10 / 20%);
+  transform: rotate(-2deg);
+}
+
+.wedding-gallery__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  object-fit: cover;
+}
+
+.wedding-gallery__photo--one {
+  grid-row: span 1;
+}
+
+.wedding-gallery__photo--two {
+  grid-row: span 2;
+  transform: rotate(2deg) translateY(1.3rem);
+}
+
+.wedding-gallery__photo--three {
+  transform: rotate(1.5deg);
+}
+
+.wedding-details {
+  padding: clamp(4.5rem, 9vw, 7rem) max(1.25rem, calc((100vw - 1120px) / 2));
+  text-align: center;
+}
+
+.wedding-date {
+  margin: 1.5rem 0 2.5rem;
+  color: #241714;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.wedding-date span {
+  color: #a9854b;
+}
+
+.wedding-details__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.wedding-detail-card {
+  display: flex;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.7rem;
+  border: 1px solid rgb(72 18 28 / 18%);
+  background: rgb(255 255 255 / 65%);
+  box-shadow: 0 12px 32px rgb(67 38 22 / 6%);
+}
+
+.wedding-detail-card > svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--gold);
+  stroke-width: 1.5;
+}
+
+.wedding-detail-card h3 {
+  margin: 0.8rem 0 0.35rem;
+  color: var(--wine);
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.wedding-detail-card p {
+  margin: 0;
+  color: #685950;
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.wedding-detail-card strong {
+  margin-top: 0.65rem;
+  color: var(--wine);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.wedding-dress-code {
+  margin: 2rem 0 0;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+}
+
+.wedding-dress-code span {
+  margin-right: 0.4rem;
+  color: #8c7254;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.wedding-footnote {
+  margin: 0.5rem 0 0;
+  color: #806a5b;
+  font-size: 0.78rem;
+}
+
+.wedding-rsvp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 1.5rem;
+  color: white;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(141 69 73 / 42%), transparent 62%),
+    var(--wine-dark);
+  text-align: center;
+}
+
+.wedding-rsvp__seal {
+  display: flex;
+  width: 3.7rem;
+  height: 3.7rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.4rem;
+  color: #f3d9a3;
+  border: 1px solid rgb(232 197 134 / 75%);
+  border-radius: 50%;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+}
+
+.wedding-rsvp__seal span {
+  margin: 0 0.12rem;
+  color: white;
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.15rem;
+}
+
+.wedding-rsvp .wedding-display {
+  margin-top: 0.3rem;
+}
+
+.wedding-rsvp > p:not(.wedding-script) {
+  max-width: 30rem;
+  margin: 0.8rem 0 1.6rem;
+  color: rgb(255 255 255 / 74%);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.wedding-button {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.wedding-button:hover {
+  transform: translateY(-2px);
+}
+
+.wedding-button--light {
+  color: var(--wine);
+  background: #f4e9d7;
+}
+
+.wedding-button--light:hover {
+  background: white;
+}
+
+.wedding-music-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.5rem;
+  color: rgb(255 255 255 / 82%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.wedding-music-link:hover {
+  color: white;
+}
+
+.wedding-footer {
+  display: flex;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.wedding-footer .wedding-script {
+  font-size: 2.8rem;
+}
+
+.wedding-footer > p:not(.wedding-script) {
+  margin: -0.25rem 0 0.5rem;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+}
+
+.wedding-footer > span {
+  color: #8a7463;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+}
+
+.wedding-login {
+  background:
+    linear-gradient(90deg, rgb(49 11 19 / 80%), rgb(49 11 19 / 36%)),
+    url('/images/recuperados/originales/hero-original.jpg') center 40% / cover no-repeat;
+}
+
+.wedding-login__card {
+  border: 1px solid rgb(189 152 84 / 35%);
+  background: rgb(249 246 240 / 96%);
+  box-shadow: 0 28px 90px rgb(23 5 10 / 34%);
+}
+
+.wedding-login__mark {
+  border: 1px solid rgb(189 152 84 / 65%);
+  background: var(--wine);
+}
+
+.wedding-login__input {
+  border-color: #d9cec1;
+  background: #fffdfa;
+  color: var(--ink);
+}
+
+.wedding-login__input:focus {
+  border-color: var(--wine);
+  --tw-ring-color: rgb(72 18 28 / 18%);
+}
+
+.wedding-form form > div {
+  border-color: rgb(72 18 28 / 16%);
+  background: rgb(255 253 250 / 88%);
+  box-shadow: 0 15px 35px rgb(67 38 22 / 5%);
+}
+
+.wedding-form input:not([type='checkbox']) {
+  border-color: #d9cec1;
+  background: #fffdfa;
+}
+
+.wedding-form input:not([type='checkbox']):focus {
+  border-color: var(--wine);
+  --tw-ring-color: rgb(72 18 28 / 18%);
+}
+
+.wedding-form input[type='checkbox'] {
+  accent-color: var(--wine);
+}
+
+.wedding-form form button[type='button'] {
+  border-radius: 999px;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.wedding-form form button[type='submit'] {
+  min-height: 3.25rem;
+  border-radius: 999px;
+  background: var(--wine);
+  box-shadow: 0 10px 24px rgb(72 18 28 / 16%);
+}
+
+.wedding-form form button[type='submit']:hover {
+  background: #64202d;
+}
+
+.wedding-admin-button {
+  background: var(--wine);
+}
+
+.wedding-admin-button:hover {
+  background: #64202d;
+}
+
+@media (max-width: 760px) {
+  .wedding-hero {
+    min-height: min(760px, calc(100svh - 64px));
   }
-  body {
-    @apply antialiased text-zinc-900 bg-white;
-    font-family: 'Lato', sans-serif;
+
+  .wedding-hero__image {
+    background-position: 47% center;
   }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
+
+  .wedding-hero__content {
+    padding-top: 4rem;
+  }
+
+  .wedding-story {
+    grid-template-columns: 1fr;
+    padding: 4.5rem 1.4rem;
+  }
+
+  .wedding-story__copy {
+    margin: auto;
+    text-align: center;
+  }
+
+  .wedding-gallery {
+    min-height: min(105vw, 430px);
+    max-width: 35rem;
+    margin: auto;
+  }
+
+  .wedding-details__grid {
+    grid-template-columns: 1fr;
+    max-width: 34rem;
+    margin: auto;
+  }
+
+  .wedding-detail-card {
+    min-height: 11rem;
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-amber-900 rounded-full hover:bg-amber-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2;
+@media (max-width: 420px) {
+  .wedding-hero__names {
+    font-size: clamp(3.3rem, 14vw, 4.4rem);
   }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-amber-900 bg-amber-100 rounded-full hover:bg-amber-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2;
+
+  .wedding-hero__content {
+    width: calc(100% - 1rem);
   }
-  .section-title {
-    @apply text-4xl md:text-5xl font-serif font-bold text-amber-900 mb-6 text-center tracking-tight;
+
+  .wedding-gallery {
+    gap: 0.55rem;
+  }
+
+  .wedding-gallery__photo {
+    padding: 0.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === MEJORAS VISUALES: PORTADA Y COLLAGE === */
+
+@keyframes wedding-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wedding-seal-appear {
+  from {
+    opacity: 0;
+    transform: scale(.82) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes wedding-hero-drift {
+  from { transform: scale(1.015); }
+  to { transform: scale(1.075); }
+}
+
+.wedding-hero__image {
+  animation: wedding-hero-drift 18s ease-in-out alternate infinite;
+  will-change: transform;
+}
+
+.wedding-hero__content > .wedding-eyebrow,
+.wedding-hero__prelude,
+.wedding-hero__names,
+.wedding-hero__caption {
+  animation: wedding-fade-up 900ms both;
+}
+
+.wedding-hero__content > .wedding-eyebrow {
+  animation-delay: 100ms;
+}
+
+.wedding-hero__prelude {
+  animation-delay: 250ms;
+}
+
+.wedding-hero__names {
+  animation-delay: 400ms;
+}
+
+.wedding-hero__caption {
+  animation-delay: 550ms;
+}
+
+.wedding-hero__seal {
+  animation: wedding-seal-appear 900ms 650ms both;
+}
+
+.wedding-scroll {
+  animation: wedding-fade-up 800ms 850ms both;
+}
+
+.wedding-gallery__photo {
+  transition:
+    transform 450ms cubic-bezier(.2, .7, .2, 1),
+    box-shadow 450ms ease;
+}
+
+.wedding-gallery__photo:hover {
+  z-index: 2;
+  transform: translateY(-7px) rotate(0deg) scale(1.025);
+  box-shadow: 0 26px 48px rgb(22 4 10 / 30%);
+}
+
+.wedding-detail-card {
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease,
+    border-color 300ms ease;
+}
+
+.wedding-detail-card:hover {
+  transform: translateY(-5px);
+  border-color: rgb(189 152 84 / 65%);
+  box-shadow: 0 18px 38px rgb(67 38 22 / 12%);
+}
+
+.wedding-hero__seal {
+  transition: filter 300ms ease;
+}
+
+.wedding-hero__seal:hover {
+  filter: drop-shadow(0 10px 22px rgb(0 0 0 / 38%));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wedding-hero__image,
+  .wedding-hero__content > .wedding-eyebrow,
+  .wedding-hero__prelude,
+  .wedding-hero__names,
+  .wedding-hero__caption,
+  .wedding-hero__seal,
+  .wedding-scroll {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  .wedding-gallery__photo,
+  .wedding-detail-card {
+    transition: none !important;
+  }
+}
+
+/* === SECCIÓN 1 — PORTADA (Fiel a Canva) === */
+
+.wedding-hero {
+  min-height: min(850px, 100svh);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.wedding-hero__image {
+  background: url('/images/recuperados/originales/hero-original.jpg') center 44% / cover no-repeat;
+  transform: scale(1.02);
+  animation: wedding-hero-drift 18s ease-in-out alternate infinite;
+  will-change: transform;
+}
+
+.wedding-hero__overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.10) 100%);
+}
+
+.wedding-hero__content {
+  width: min(100% - 2rem, 900px);
+  padding: 5rem 1rem 4rem;
+  text-align: center;
+  z-index: 2;
+  position: relative;
+}
+
+.wedding-eyebrow--light {
+  color: var(--wine);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.wedding-hero__names {
+  margin: 0.5rem 0 0;
+  color: var(--wine);
+  font-family: 'Great Vibes', cursive;
+  font-weight: 400;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  line-height: 0.9;
+  text-shadow: none;
+}
+
+.wedding-hero__names .wedding-hero__amp {
+  color: var(--gold);
+  font-family: 'Great Vibes', cursive;
+  font-size: 0.6em;
+  display: inline-block;
+  margin: 0 0.15rem;
+}
+
+.wedding-hero__seal {
+  position: relative;
+  top: 1.5rem;
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 12px rgba(38, 9, 16, 0.18));
+  animation: wedding-seal-appear 900ms 650ms both;
+}
+
+.wedding-scroll {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 2.5rem;
+  color: var(--wine);
+  text-decoration: none;
+  animation: wedding-fade-up 800ms 850ms both;
+}
+
+.wedding-scroll__label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--wine);
+}
+
+/* === SECCIÓN 2 — CUENTA REGRESIVA (Fiel a Canva) === */
+
+.wedding-invitation {
+  background: linear-gradient(rgba(248,245,239,0.93), rgba(248,245,239,0.96)), url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+}
+
+.wedding-countdown__eyebrow {
+  color: var(--wine);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  display: block;
+}
+
+.wedding-countdown__title {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  letter-spacing: 0.06em;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.05;
+}
+
+.wedding-countdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.5rem, 3vw, 2rem);
+  width: min(100%, 700px);
+  margin: 0 auto 3rem auto;
+  text-align: center;
+}
+
+.wedding-countdown__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wedding-countdown__number {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.2rem, 8vw, 4.6rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  display: block;
+}
+
+.wedding-countdown__unit {
+  color: #826e61;
+  font-size: 0.6rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  margin-top: 0.65rem;
+  display: block;
+}
+
+.wedding-countdown__ornament {
+  width: 100%;
+  max-width: 160px;
+  height: 40px;
+  margin: 2rem auto 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80"><path d="M30 40 Q 50 20 70 40 T 110 40 T 150 40" stroke="%2348121c" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') center / contain no-repeat;
+  opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+  .wedding-countdown {
+    gap: 0.4rem;
+  }
+  .wedding-countdown__number {
+    font-size: clamp(1.8rem, 10vw, 2.6rem);
+  }
+  .wedding-countdown__unit {
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* === SECCIÓN 3 — MÚSICA (Fiel a Canva) === */
+
+.wedding-music {
+  background: linear-gradient(rgba(248,245,239,0.93), rgba(248,245,239,0.96)), url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+  padding: 4rem 1rem 5rem;
+  text-align: center;
+}
+
+.wedding-music__eyebrow {
+  color: var(--wine);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.wedding-music__title {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  letter-spacing: 0.04em;
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.wedding-music__player {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(38, 9, 16, 0.12);
+}
+
+.wedding-music__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .wedding-music__player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* === SECCIÓN 4 — VERSÍCULO (Fiel a Canva) === */
+
+.wedding-verse {
+  background: var(--wine-dark);
+  color: #fff7ed;
+  padding: 5rem 1.5rem 5rem;
+  text-align: center;
+  position: relative;
+}
+
+.wedding-verse__ornament {
+  width: 100%;
+  max-width: 200px;
+  height: 80px;
+  margin: 0 auto 2.5rem;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80"><path d="M30 40 Q 50 20 70 40 T 110 40 T 150 40" stroke="%23bd9854" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') center / contain no-repeat;
+  opacity: 1;
+}
+
+.wedding-verse__title {
+  color: #fff7ed;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  letter-spacing: 0.03em;
+  line-height: 1.8;
+  margin: 0 0 1.5rem 0;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wedding-verse__reference {
+  color: var(--gold);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .wedding-verse__title {
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    line-height: 1.7;
+  }
+  .wedding-verse__reference {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* === BLOQUE 3 — HISTORIA (3 momentos, Canva) === */
+
+.wedding-history {
+  background: var(--wine-dark);
+  color: #fff7ed;
+  padding: 5rem 1.5rem 5rem;
+  position: relative;
+}
+
+.wedding-history__moment {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-bottom: 4rem;
+  align-items: center;
+  text-align: center;
+}
+
+.wedding-history__moment-content {
+  max-width: 700px;
+}
+
+.wedding-history__moment-title {
+  color: #fff7ed;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  letter-spacing: 0.04em;
+  margin: 0.5rem 0 1rem 0;
+  line-height: 1.3;
+}
+
+.wedding-history__moment-copy {
+  color: #eadfd3;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.wedding-history__moment-invite {
+  color: var(--gold);
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  margin-top: 1rem;
+  line-height: 1.4;
+}
+
+.wedding-history__moment-photos {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.wedding-history__photo {
+  position: relative;
+  border: 8px solid #fffdf7;
+  box-shadow: 0 12px 35px rgba(45, 25, 18, 0.15);
+  overflow: hidden;
+}
+
+.wedding-history__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wedding-history__photo--tilted-left {
+  width: clamp(200px, 35vw, 340px);
+  height: clamp(260px, 45vw, 420px);
+  transform: rotate(-3deg);
+}
+
+.wedding-history__photo--tilted-right {
+  width: clamp(200px, 35vw, 340px);
+  height: clamp(260px, 45vw, 420px);
+  transform: rotate(3deg);
+}
+
+.wedding-history__photo--main {
+  width: clamp(280px, 50vw, 460px);
+  height: clamp(340px, 60vw, 560px);
+}
+
+.wedding-history__clip {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 2;
+}
+.wedding-history__photo--tilted-left .wedding-history__clip {
+  top: 8px;
+  right: 8px;
+  transform: rotate(12deg);
+}
+.wedding-history__photo--tilted-right .wedding-history__clip {
+  top: 8px;
+  left: 8px;
+  transform: rotate(-12deg);
+}
+.wedding-history__photo--main .wedding-history__clip {
+  top: 8px;
+  right: 8px;
+  transform: rotate(8deg);
+}
+
+@media (max-width: 700px) {
+  .wedding-history__moment {
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .wedding-history__photo--tilted-left,
+  .wedding-history__photo--tilted-right {
+    width: 85vw;
+    height: 200px;
+    transform: none;
+  }
+  .wedding-history__photo--main {
+    width: 85vw;
+    height: 300px;
+    transform: none;
+  }
+  .wedding-history__clip {
+    width: 28px;
+    height: 28px;
+    top: 6px;
+    right: 6px;
+  }
+}
+
+/* === BLOQUE 4 — DETALLES DEL EVENTO (Canva) === */
+
+.wedding-details__eyebrow {
+  color: var(--wine);
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(2.5rem, 7vw, 3.5rem);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.wedding-details__title {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  letter-spacing: 0.03em;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.1;
+}
+
+.wedding-details__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto 2rem auto;
+}
+
+.wedding-details__info {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(72, 18, 28, 0.18);
+  border: 1px solid rgba(72, 18, 28, 0.18);
+  width: min(100%, 800px);
+}
+
+.wedding-detail-card {
+  padding: 2rem 1.2rem;
+  background: rgba(248, 245, 239, 0.78);
+  text-align: center;
+}
+
+.wedding-detail__icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.wedding-detail-card h3 {
+  margin: 0.9rem 0 0.6rem;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.wedding-detail-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.8;
+}
+
+.wedding-detail-card strong {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--wine);
+  font-weight: 700;
+}
+
+.wedding-details__como-llegar {
+  margin-top: 0.5rem;
+}
+
+.wedding-dress-code {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.wedding-dress-code span {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .wedding-details__info {
+    grid-template-columns: 1fr;
+  }
+  .wedding-detail-card {
+    padding: 1.6rem 1rem;
+  }
+}
+
+/* === BLOQUE 5 — CONFIRMACIÓN Y REGALOS (Canva) === */
+
+.wedding-rsvp {
+  background: var(--wine-dark);
+  color: #fff7ed;
+  padding: 5rem 1.5rem 5rem;
+  text-align: center;
+  position: relative;
+}
+
+.wedding-rsvp__seal {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 2rem;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Great Vibes', cursive;
+  font-size: 2rem;
+  color: var(--wine-dark);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.wedding-rsvp__seal span {
+  font-size: 1.2rem;
+}
+
+.wedding-rsvp__copy {
+  color: #eadfd3;
+  font-size: 0.95rem;
+  margin: 0.5rem 0 2rem 0;
+  line-height: 1.6;
+}
+
+.wedding-gifts {
+  background: linear-gradient(rgba(248, 245, 239, 0.93), rgba(248, 245, 239, 0.96)), url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+  padding: 5rem 1.5rem 5rem;
+  text-align: center;
+}
+
+.wedding-gifts__icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  display: block;
+}
+
+.wedding-gifts__list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 2rem 0;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
+  line-height: 2;
+  display: inline-block;
+  text-align: left;
+}
+
+.wedding-gifts__list li {
+  padding: 0.4rem 0;
+}
+
+.wedding-gifts__note {
+  color: #826e61;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .wedding-rsvp__seal {
+    width: 90px;
+    height: 90px;
+    font-size: 1.6rem;
+  }
+}
+
+/* === BLOQUE 6 — PIE DE PÁGINA COMPLETO (Canva) === */
+
+.wedding-footer {
+  background: linear-gradient(rgba(248, 245, 239, 0.92), rgba(248, 245, 239, 0.95)), url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+  padding: 5rem 1.5rem 5rem;
+  text-align: center;
+}
+
+.wedding-footer__content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.wedding-footer__photo {
+  width: min(100%, 500px);
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 12px 35px rgba(45, 25, 18, 0.12);
+  margin-bottom: 2rem;
+}
+
+.wedding-footer__closing {
+  color: var(--wine);
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 0 0 1rem 0;
+}
+
+.wedding-footer__names {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: 0.03em;
+  margin: 0 0 0.5rem 0;
+}
+
+.wedding-footer__date {
+  color: #77665a;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0 0 2.5rem 0;
+}
+
+.wedding-footer__contacts {
+  display: flex;
+  gap: 3rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.wedding-footer__contact {
+  min-width: 200px;
+}
+
+.wedding-footer__contact h3 {
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: 1.4rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.wedding-footer__contact p {
+  color: #826e61;
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .wedding-footer__contacts {
+    gap: 2rem;
+    flex-direction: column;
+    align-items: center;
+  }
+  .wedding-footer__contact {
+    text-align: center;
+    min-width: auto;
+  }
+}
+
+/* === ETAPA 3 — RECURSOS ORIGINALES DE CANVA === */
+
+/* Portada: imagen original de Canva */
+.wedding-hero__image {
+  background: url('/images/recuperados/originales/hero-original.jpg') center 44% / cover no-repeat !important;
+  animation: wedding-hero-drift 18s ease-in-out alternate infinite;
+  will-change: transform;
+}
+
+/* Sello de cera original más grande */
+.wedding-hero__seal {
+  width: 140px !important;
+  height: 140px !important;
+  top: 1rem !important;
+  object-fit: contain;
+}
+
+/* Textura de papel original de Canva en secciones */
+.wedding-invitation,
+.wedding-details,
+.wedding-music,
+.wedding-prices,
+.wedding-gifts,
+.wedding-footer {
+  background: linear-gradient(rgba(248,245,239,0.93), rgba(248,245,239,0.96)), url('/images/recuperados/originales/paper-texture-original.jpg') center / cover !important;
+}
+
+/* Clips de papelería sobre fotos de historia */
+.wedding-history__photo {
+  position: relative;
+}
+
+.wedding-history__clip {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 34px;
+  height: 34px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Dos aves ornamentales */
+.wedding-history__aves {
+  margin: 1.5rem auto 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.wedding-history__aves img {
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+
+/* Ornamento nudo de cuerda en cuenta regresiva y versículo */
+.wedding-countdown__ornament,
+.wedding-verse__ornament {
+  width: 100%;
+  max-width: 220px;
+  height: 80px;
+  margin: 2rem auto 0;
+  background: url('/images/recuperados/ornamentos/nudo-cuerda.svg') center / contain no-repeat;
+  opacity: 1;
+}
+
+/* Iconos SVG en detalles, regalos y confirmación */
+.wedding-detail__icon,
+.wedding-gifts__icon,
+.wedding-rsvp__seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wedding-detail__icon::before,
+.wedding-gifts__icon::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+.wedding-detail__icon::before { content: url('/images/recuperados/ornamentos/icono-traje.svg'); }
+.wedding-gifts__icon::before { content: url('/images/recuperados/ornamentos/icono-regalo.svg'); }
+
+/* Sello de confirmación con cera original */
+.wedding-rsvp__seal {
+  width: 140px !important;
+  height: 140px !important;
+  background: url('/images/recuperados/originales/wax-seal-original.png') center / contain no-repeat !important;
+  border-radius: 0 !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.wedding-prices {
+  padding: 5rem 1.5rem;
+  text-align: center;
+}
+
+.wedding-prices__list {
+  max-width: 680px;
+  margin: 2rem auto 0;
+  border-top: 1px solid rgb(72 18 28 / 20%);
+}
+
+.wedding-prices__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid rgb(72 18 28 / 20%);
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+  text-align: left;
+}
+
+.wedding-prices__item dd {
+  flex: 0 0 auto;
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .wedding-prices__item {
+    gap: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Ajustes de composición para seguir las referencias de la invitación. */
+.wedding-hero {
+  min-height: min(94svh, 760px);
+  overflow: visible;
+  background: var(--paper);
+}
+
+.wedding-hero__image {
+  z-index: 0;
+  background-position: center 43%;
+  animation: none;
+  transform: none;
+  will-change: auto;
+}
+
+.wedding-hero__overlay {
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    transparent 55%,
+    rgb(244 240 234 / 42%) 78%,
+    var(--paper) 100%
+  );
+}
+
+.wedding-hero__seal {
+  position: absolute;
+  z-index: 2;
+  top: auto !important;
+  right: 0;
+  bottom: -3.8rem;
+  left: 0;
+  width: clamp(6.5rem, 11vw, 9rem) !important;
+  height: auto;
+  margin: auto;
+  filter: drop-shadow(0 4px 8px rgb(52 30 18 / 20%));
+  animation: none;
+}
+
+.wedding-invitation {
+  min-height: 0;
+  padding: 5rem 1.5rem 3rem;
+  overflow: visible;
+}
+
+.wedding-invitation__names {
+  margin: 1rem 0 2.5rem;
+  color: var(--wine);
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(3.8rem, 9vw, 7rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.wedding-invitation__names span {
+  display: inline-block;
+  margin: 0 0.1em;
+  font-size: 0.7em;
+}
+
+.wedding-countdown__eyebrow {
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: lowercase;
+}
+
+.wedding-countdown__title {
+  margin: 0.2rem 0 0;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  letter-spacing: 0.06em;
+}
+
+.wedding-countdown {
+  width: min(100%, 850px);
+  gap: clamp(0.65rem, 3vw, 2rem);
+  margin: 1rem auto 0;
+}
+
+.wedding-countdown__item {
+  position: relative;
+  min-width: 0;
+}
+
+.wedding-countdown__item:not(:last-child)::after {
+  position: absolute;
+  top: 0;
+  right: clamp(-1rem, -1.5vw, -0.3rem);
+  color: var(--wine);
+  content: ':';
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1;
+}
+
+.wedding-countdown__item span {
+  font-size: clamp(2.15rem, 7vw, 5.2rem);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.wedding-countdown__item small {
+  margin-top: 0.45rem;
+  color: var(--wine);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(0.65rem, 1.4vw, 1rem);
+  letter-spacing: 0.13em;
+}
+
+.wedding-music {
+  width: min(100%, 760px);
+  margin-top: 3.5rem;
+  padding: 0;
+  background: transparent;
+}
+
+.wedding-music__title {
+  margin: 0 0 0.8rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.7rem, 4.5vw, 2.5rem);
+  font-style: italic;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.wedding-music__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.1rem, 4vw, 2.5rem);
+  color: var(--wine);
+}
+
+.wedding-music__controls button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.wedding-music__controls button svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  stroke-width: 2;
+}
+
+.wedding-music__controls .wedding-music__play {
+  width: 3.8rem;
+  height: 3.8rem;
+  border-radius: 50%;
+  background: var(--wine);
+  color: white;
+}
+
+.wedding-music__media {
+  position: relative;
+  width: min(100%, 360px);
+  height: 203px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: #25150e;
+  box-shadow: 0 12px 30px rgb(52 30 18 / 18%);
+}
+
+.wedding-music__media > div:first-child,
+.wedding-music__media iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.wedding-music__media iframe {
+  pointer-events: none;
+}
+
+.wedding-music__media .wedding-music__play {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+  background: var(--wine);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 25%);
+}
+
+.wedding-music__media .wedding-music__play svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.wedding-music__status {
+  min-height: 1.3rem;
+  margin: 0.65rem 0 0;
+  color: #806a5b;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+}
+
+.wedding-music__status a {
+  color: var(--wine);
+  text-decoration: underline;
+}
+
+.wedding-music__rope {
+  display: block;
+  width: 8rem;
+  height: 2.5rem;
+  margin: 1.5rem auto 0;
+  filter: sepia(0.6) saturate(0.8);
+}
+
+.wedding-verse {
+  padding: 2.5rem 1.5rem 3.5rem;
+  background:
+    linear-gradient(rgb(248 245 239 / 35%), rgb(248 245 239 / 35%)),
+    url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+  color: #281a14;
+}
+
+.wedding-verse__ornament {
+  height: 2.5rem;
+  margin: 0 auto 1rem;
+  background: url('/images/recuperados/ornamentos/nudo-cuerda.svg') center / contain no-repeat;
+  filter: sepia(0.8) saturate(0.9);
+}
+
+.wedding-verse__title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  color: #281a14;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  line-height: 1.35;
+}
+
+.wedding-verse__title em {
+  color: #70434a;
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.35em;
+  font-weight: 400;
+}
+
+.wedding-verse__reference {
+  margin: 0.6rem 0 0;
+  color: #281a14;
+  font-size: 0.9rem;
+  letter-spacing: 0.16em;
+}
+
+.wedding-details {
+  padding: 4rem max(1.25rem, calc((100vw - 1120px) / 2));
+}
+
+.wedding-details__eyebrow {
+  font-size: clamp(3rem, 8vw, 5rem);
+}
+
+.wedding-details__title {
+  margin-bottom: 0.5rem;
+  font-size: clamp(4rem, 10vw, 7rem);
+  letter-spacing: 0.08em;
+}
+
+.wedding-details__intro {
+  max-width: 26rem;
+  margin: 0 auto 1.2rem;
+  color: #6a5548;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+  line-height: 1.3;
+}
+
+.wedding-details__content {
+  max-width: 38rem;
+  gap: 1rem;
+}
+
+.wedding-details__info {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 0;
+  background: transparent;
+}
+
+.wedding-detail-card {
+  min-height: 0;
+  padding: 1rem 0.5rem;
+  border: 0;
+  border-bottom: 1px solid rgb(72 18 28 / 14%);
+  background: transparent;
+  box-shadow: none;
+}
+
+.wedding-detail__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0 auto 0.3rem;
+}
+
+.wedding-detail-card h3 {
+  margin: 0.25rem 0;
+  font-size: 1.65rem;
+}
+
+.wedding-detail-card p {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.wedding-details__como-llegar {
+  margin-top: 0.75rem;
+  color: white;
+  background: var(--wine);
+  text-decoration: none;
+}
+
+.wedding-history {
+  padding: 0;
+  background:
+    linear-gradient(rgb(73 12 23 / 94%), rgb(73 12 23 / 94%)),
+    url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+}
+
+.wedding-history__moment {
+  gap: 1.3rem;
+  margin: 0;
+  padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+  border-top: 1px solid rgb(255 247 237 / 10%);
+}
+
+.wedding-history__moment-content {
+  max-width: 48rem;
+}
+
+.wedding-history__moment-title {
+  margin: 0 0 0.8rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: 0.02em;
+}
+
+.wedding-history__moment-copy {
+  color: rgb(255 247 237 / 78%);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1rem, 1.65vw, 1.25rem);
+  line-height: 1.45;
+}
+
+.wedding-history__moment-photos {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 0 auto;
+}
+
+.wedding-history__photo,
+.wedding-history__photo--tilted-left,
+.wedding-history__photo--tilted-right,
+.wedding-history__photo--main {
+  width: clamp(190px, 36vw, 250px);
+  height: clamp(125px, 22vw, 165px);
+  margin: -0.2rem 0;
+  padding: 0;
+  overflow: visible;
+  border: 7px solid #fffdf7;
+  outline: 1px dashed rgb(255 253 247 / 78%);
+  outline-offset: -2px;
+  background: #fffdf7;
+  box-shadow: 0 8px 18px rgb(20 4 8 / 28%);
+  transform: rotate(-1.5deg);
+}
+
+.wedding-history__photo--tilted-right {
+  transform: rotate(1.5deg);
+}
+
+.wedding-history__photo--main {
+  width: clamp(215px, 40vw, 280px);
+  height: clamp(145px, 25vw, 185px);
+}
+
+.wedding-history__photo img:not(.wedding-history__clip) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wedding-history__clip {
+  top: -1.05rem !important;
+  right: 50% !important;
+  left: auto !important;
+  width: 0.85rem !important;
+  height: 1.25rem !important;
+  object-fit: contain;
+  transform: translateX(50%) rotate(5deg);
+}
+
+.wedding-history__aves {
+  margin: 0.5rem auto 1rem;
+}
+
+.wedding-history__aves img {
+  width: clamp(4rem, 9vw, 7rem);
+  filter: brightness(0) invert(1);
+}
+
+.wedding-history__handwritten {
+  margin: 0 0 0.7rem;
+  color: #fff7ed;
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(3rem, 7vw, 5rem);
+  line-height: 1;
+  transform: rotate(-5deg);
+}
+
+.wedding-history__couple {
+  margin: 1rem 0 0;
+  color: #eadfd3;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.wedding-rsvp {
+  padding: 3rem 1.5rem;
+  background: #713536;
+}
+
+.wedding-rsvp__icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 0.8rem;
+  filter: brightness(0) invert(1);
+}
+
+.wedding-rsvp .wedding-eyebrow--light {
+  color: #fff7ed;
+}
+
+.wedding-rsvp .wedding-display {
+  margin-top: 0.25rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.wedding-rsvp__copy {
+  margin: 0.2rem 0 1.3rem;
+  color: #fff7ed;
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.wedding-rsvp .wedding-button--light,
+.wedding-registration .wedding-button--light {
+  color: white;
+  background: var(--wine);
+  text-decoration: none;
+}
+
+.wedding-dress-code {
+  display: flex;
+  min-height: 18rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 3rem 1.5rem;
+  color: #fff7ed;
+  background: #4a101b;
+  text-align: center;
+}
+
+.wedding-dress-code img {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 0.8rem;
+  filter: brightness(0) invert(1);
+}
+
+.wedding-dress-code h2 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 400;
+}
+
+.wedding-dress-code p {
+  margin: 0.3rem 0 0;
+  font-size: 1.35rem;
+}
+
+.wedding-gifts {
+  padding: 3rem 1.5rem 3.5rem;
+  color: #fff7ed;
+  background: #25150e;
+}
+
+.wedding-gifts__icon {
+  width: 4rem;
+  height: 4rem;
+  filter: brightness(0) invert(1);
+}
+
+.wedding-gifts .wedding-display {
+  color: #fff7ed;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+
+.wedding-gifts__list {
+  margin: 0.6rem 0 0;
+  color: #fff7ed;
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.wedding-gifts__list li {
+  padding: 0.2rem 0;
+}
+
+.wedding-gifts__list li span {
+  display: inline-block;
+  margin-right: 0.45rem;
+  font-size: 0.8em;
+  letter-spacing: -0.35em;
+}
+
+.wedding-registration {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.wedding-registration h2 {
+  display: inline-block;
+  margin: 0;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  color: white;
+  background: var(--wine);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 500;
+}
+
+.wedding-registration p {
+  margin: 0.4rem 0 1rem;
+  color: #70434a;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.4rem;
+}
+
+.wedding-prices {
+  padding: 2rem 1.5rem 3rem;
+}
+
+.wedding-prices .wedding-display {
+  color: #281a14;
+  font-weight: 400;
+}
+
+.wedding-prices__list {
+  display: grid;
+  max-width: 26rem;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+  border: 0;
+}
+
+.wedding-prices__item {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0;
+  border: 0;
+  color: #281a14;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  text-align: center;
+}
+
+.wedding-prices__item dt {
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wedding-prices__item dd {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 400;
+}
+
+.wedding-prices__note {
+  max-width: 52rem;
+  margin: 2rem auto 0;
+  color: #806a5b;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.wedding-bank-details {
+  padding: 1.3rem 1.5rem;
+  border-radius: 2rem;
+  color: white;
+  background: #050505;
+  font-size: 0.9rem;
+}
+
+.wedding-bank-details dl {
+  display: grid;
+  max-width: 48rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 2rem;
+  margin: 0 auto;
+}
+
+.wedding-bank-details dl div {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.wedding-bank-details dt {
+  font-weight: 700;
+}
+
+.wedding-bank-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.wedding-footer {
+  display: block;
+  min-height: 0;
+  padding: 0 0 2.5rem;
+  background:
+    linear-gradient(rgb(248 245 239 / 35%), rgb(248 245 239 / 35%)),
+    url('/images/recuperados/originales/paper-texture-original.jpg') center / cover;
+  text-align: left;
+}
+
+.wedding-footer__banner {
+  position: relative;
+  height: clamp(16rem, 38vw, 30rem);
+  overflow: hidden;
+  background: #141414;
+}
+
+.wedding-footer__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+  filter: grayscale(1) brightness(0.62);
+  object-fit: cover;
+  object-position: center 50%;
+}
+
+.wedding-footer__message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  color: white;
+  text-align: center;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 45%);
+}
+
+.wedding-footer__message p {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+}
+
+.wedding-footer__message span {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+}
+
+.wedding-footer__contacts {
+  display: grid;
+  max-width: 1200px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.wedding-footer__contacts > h2,
+.wedding-footer__welcome h2 {
+  margin: 0;
+  color: #281a14;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.wedding-footer__contact {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: #281a14;
+  text-align: left;
+}
+
+.wedding-footer__contact h3 {
+  margin: 0 0 0.2rem;
+  color: inherit;
+  font-size: 1.1rem;
+}
+
+.wedding-footer__contact a {
+  color: inherit;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.wedding-footer__contact a:hover {
+  text-decoration: underline;
+}
+
+.wedding-footer__welcome {
+  text-align: center;
+}
+
+.wedding-footer__admin {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #806a5b;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .wedding-hero {
+    min-height: min(78svh, 620px);
+  }
+
+  .wedding-hero__image {
+    background-position: 47% center;
+  }
+
+  .wedding-hero__seal {
+    bottom: -3.1rem;
+  }
+
+  .wedding-invitation {
+    padding: 4rem 1rem 2.5rem;
+  }
+
+  .wedding-countdown {
+    gap: 0.55rem;
+  }
+
+  .wedding-countdown__item:not(:last-child)::after {
+    right: -0.45rem;
+    font-size: 2rem;
+  }
+
+  .wedding-countdown__item span {
+    font-size: clamp(1.7rem, 8vw, 2.6rem);
+  }
+
+  .wedding-countdown__item small {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+  }
+
+  .wedding-music {
+    margin-top: 2.5rem;
+  }
+
+  .wedding-music__media {
+    width: min(100%, 320px);
+    height: 200px;
+  }
+
+  .wedding-history__moment {
+    gap: 1.5rem;
+    padding: 3rem 1.2rem;
+  }
+
+  .wedding-history__moment-photos {
+    width: 100%;
+  }
+
+  .wedding-history__photo,
+  .wedding-history__photo--tilted-left,
+  .wedding-history__photo--tilted-right {
+    width: min(66vw, 240px);
+    height: clamp(125px, 38vw, 165px);
+    transform: rotate(-1deg);
+  }
+
+  .wedding-history__photo--tilted-right {
+    transform: rotate(1deg);
+  }
+
+  .wedding-history__photo--main {
+    width: min(72vw, 260px);
+    height: clamp(145px, 43vw, 185px);
+  }
+
+  .wedding-bank-details {
+    padding: 1.2rem 1rem;
+    border-radius: 1.2rem;
+    font-size: 0.78rem;
+  }
+
+  .wedding-bank-details dl {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .wedding-footer__contacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .wedding-footer__welcome {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .wedding-footer__contacts > h2 {
+    font-size: 1.15rem;
+  }
+
+  .wedding-footer__contact a {
+    font-size: 0.82rem;
+  }
+}
+
+[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+[data-reveal='visible'] {
+  animation: wedding-reveal-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.wedding-reveal-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+[data-reveal='visible'][data-reveal-letters] .wedding-reveal-letter {
+  display: inline-block;
+  animation: wedding-letter-in 220ms ease both;
+}
+
+@keyframes wedding-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wedding-letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.28em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wedding-hero__image {
+    animation: none !important;
+    transform: none;
+  }
+
+  [data-reveal='pending'],
+  [data-reveal='visible'],
+  [data-reveal='visible'][data-reveal-letters] .wedding-reveal-letter {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
 }

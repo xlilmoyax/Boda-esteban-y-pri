@@ -31,5 +31,8 @@ npm run dev
 - `npm run preview` — previsualizar build
 - `npm run lint` — chequeo de tipos TypeScript
 
+## Invitación
+La portada, los relatos, la confirmación y los detalles del evento se construyen como componentes React responsivos. La música usa el reproductor oficial de YouTube y comunica cuando el navegador bloquea el autoplay. Las animaciones respetan `prefers-reduced-motion`.
+
 ## Alcance
 Sin correos automáticos. Sin pasarela de pago. Los pagos se informan y verifican manualmente desde el panel administrativo.

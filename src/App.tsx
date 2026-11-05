@@ -6,6 +6,7 @@ import AdminLoginView from './components/AdminLoginView';
 import AdminDashboardView from './components/AdminDashboardView';
 import GuestDetail from './components/admin/GuestDetail';
 import NotFoundView from './components/NotFoundView';
+import { WeddingMusicProvider } from './components/WeddingMusic';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 
 type Route =
@@ -58,7 +59,11 @@ export default function App() {
     const { data: listener } = supabase!.auth.onAuthStateChange((_event, session) => {
       setIsAdminLoggedIn(Boolean(session));
       setCurrentAdminId(session?.user.id ?? null);
-      if (!session) {
+      const path = window.location.pathname;
+      if (
+        !session &&
+        (path === '/dashboard-admin' || path.startsWith('/dashboard-admin/guest/'))
+      ) {
         setCurrentRoute('login-admin');
         window.history.pushState(null, '', '/login-admin');
       }
@@ -83,32 +88,39 @@ export default function App() {
   };
 
   const handleNavigate = (path: string) => {
-    if (path === 'dashboard-admin' && !isAdminLoggedIn) {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    if (normalizedPath === '/dashboard-admin' && !isAdminLoggedIn) {
       navigateTo('/login-admin');
     } else {
-      navigateTo(`/${path}`);
+      navigateTo(normalizedPath);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F0EB] text-[#211916]">
-      <Header currentRoute={currentRoute} onNavigate={handleNavigate} isAdminLoggedIn={isAdminLoggedIn} />
-      <main className="flex-grow">
-        {currentRoute === 'home' && <HomeView onNavigate={handleNavigate} />}
-        {currentRoute === 'confirmacion' && <ConfirmacionView onNavigate={handleNavigate} />}
-        {currentRoute === 'login-admin' && <AdminLoginView onNavigate={handleNavigate} />}
-        {currentRoute === 'dashboard-admin' && (
-          <AdminDashboardView onNavigate={handleNavigate} currentAdminId={currentAdminId} />
+    <WeddingMusicProvider>
+      <div className="min-h-screen bg-[#F3F0EB] text-[#211916]">
+        {currentRoute !== 'home' && (
+          <Header currentRoute={currentRoute} onNavigate={handleNavigate} isAdminLoggedIn={isAdminLoggedIn} />
         )}
-        {currentRoute === 'guest-detail' && guestDetailId && (
-          <GuestDetail
-            guestId={guestDetailId}
-            currentAdminId={currentAdminId}
-            onBack={() => navigateTo('/dashboard-admin')}
-          />
-        )}
-        {currentRoute === 'not-found' && <NotFoundView onNavigate={handleNavigate} />}
-      </main>
-    </div>
+        <main className="flex-grow">
+          <div hidden={currentRoute !== 'home'}>
+            <HomeView onNavigate={handleNavigate} />
+          </div>
+          {currentRoute === 'confirmacion' && <ConfirmacionView onNavigate={handleNavigate} />}
+          {currentRoute === 'login-admin' && <AdminLoginView onNavigate={handleNavigate} />}
+          {currentRoute === 'dashboard-admin' && (
+            <AdminDashboardView onNavigate={handleNavigate} currentAdminId={currentAdminId} />
+          )}
+          {currentRoute === 'guest-detail' && guestDetailId && (
+            <GuestDetail
+              guestId={guestDetailId}
+              currentAdminId={currentAdminId}
+              onBack={() => navigateTo('/dashboard-admin')}
+            />
+          )}
+          {currentRoute === 'not-found' && <NotFoundView onNavigate={handleNavigate} />}
+        </main>
+      </div>
+    </WeddingMusicProvider>
   );
 }

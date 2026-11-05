@@ -1,0 +1,92 @@
+[
+  {
+    "nombre": "hero-original.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 191614
+  },
+  {
+    "nombre": "wax-seal-original.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 785322
+  },
+  {
+    "nombre": "paper-texture-original.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 181366
+  },
+  {
+    "nombre": "historia-foto-1.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 122791
+  },
+  {
+    "nombre": "historia-foto-2.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 104203
+  },
+  {
+    "nombre": "historia-foto-3.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 140361
+  },
+  {
+    "nombre": "historia-foto-4.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 169654
+  },
+  {
+    "nombre": "historia-foto-5.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 159700
+  },
+  {
+    "nombre": "historia-foto-6.jpg",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 90020
+  },
+  {
+    "nombre": "ornamento-fondo-1.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 7399526
+  },
+  {
+    "nombre": "ornamento-fondo-2.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 632147
+  },
+  {
+    "nombre": "ornamento-fondo-3.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 332802
+  },
+  {
+    "nombre": "ornamento-fondo-4.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 563964
+  },
+  {
+    "nombre": "ornamento-movil-1.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 1927108
+  },
+  {
+    "nombre": "ornamento-movil-2.png",
+    "estado": "OK",
+    "descargado": true,
+    "bytes": 352704
+  }
+]
