@@ -88,7 +88,7 @@ https://eventocualquiera.my.canva.site/casamientoestebanypriscila
 - La carpeta de referencias indicada por la pareja contiene las imágenes usadas para el orden de secciones y la composición.
 - La portada, cuenta regresiva, música, versículo, evento, relatos, confirmación, dress code, regalos, registro, precios, transferencia y contactos están implementados en componentes React, no como una captura aplanada.
 - La ruta y el formulario de confirmación existentes se conservan.
-- El reproductor oficial de YouTube usa la canción confirmada por la pareja, mantiene un solo reproductor entre rutas y comunica claramente el bloqueo de autoplay o los errores.
+- El reproductor usa el archivo local `public/audio/cancion-casamiento.mp3`, mantiene el audio entre rutas y comunica claramente el bloqueo de autoplay o los errores.
 - Los títulos e imágenes se revelan una vez al entrar en pantalla; las pinzas pequeñas se mantienen sobre el borde superior de cada foto.
 - La fecha límite y los datos de transferencia visibles en las capturas fueron confirmados por la pareja antes de integrarlos.
 - Las fotos y ornamentos que ya se encontraban en `public/images/recuperados/originales/` se usan directamente; donde no existe el dibujo exacto de la captura, se señala en el inventario.

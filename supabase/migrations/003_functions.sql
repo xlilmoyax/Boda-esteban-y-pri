@@ -1,89 +1,88 @@
--- Migración 003: Funciones SQL para validación y cálculo de precios
--- Funciones ejecutadas con privilegios del definidor (security definer) cuando sea necesario.
+-- Funciones de auditoría y utilidades del modelo definitivo.
+-- Esta migración SÓLO define funciones que operan sobre las nueve tablas
+-- definitivas (registrations, attendees, pricing_versions, pricing_rules,
+-- admin_profiles, audit_logs, event_public_config, event_private_config,
+-- invitation_revisions).
+--
+-- FUNCIONES LEGADO ELIMINADAS (no formar parte del modelo definitivo):
+--   - registrar_confirmacion()      (referenciaba guests / payment_records)
+--   - calculate_group_amount()      (legado, cálculo movido al servidor)
+--   - audit_log()                   (firma inconsistente; reemplazada por write_audit)
+--   - calculate_attendee_price()    (se conserva en 004_pricing_history.sql)
+--
+-- No hay referencias a guests, payment_records, pricing_history, event_settings
+-- ni registrar_confirmacion() en este archivo.
 
--- Función: validar y calcular importe de un grupo de asistentes
--- Recibe un JSON con los asistentes y devuelve el desglose calculado según las reglas vigentes.
-create or replace function public.calculate_group_amount(
-  p_attendees jsonb
+-- =============================================
+-- Función: write_audit
+-- Registra una entrada de auditoría. Es VOLATILE (INSERT en audit_logs).
+-- Firma consistente con las llamadas realizadas desde 004 y 008.
+-- Ejecución restringida: revocada de PUBLIC; solo los roles admin/editor
+-- pueden escribir realmente gracias a RLS en audit_logs.
+-- =============================================
+create or replace function public.write_audit(
+  p_actor_type text,
+  p_actor_id uuid,
+  p_action text,
+  p_entity_type text,
+  p_record_id uuid,
+  p_entity_key text,
+  p_request_id uuid,
+  p_source text,
+  p_old_data jsonb default null,
+  p_new_data jsonb default null
 )
-returns jsonb
+returns uuid
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  v_id uuid;
+begin
+  -- Defensa en profundidad: solo administradores pueden escribir auditoría.
+  if not public.is_admin('editor') then
+    raise exception using errcode = '42501', message = 'No autorizado: se requiere rol de administrador para escribir auditoría.';
+  end if;
+
+  insert into public.audit_logs (
+    actor_type, actor_id, action, entity_type, record_id, entity_key,
+    request_id, source, old_data, new_data
+  )
+  values (
+    p_actor_type, p_actor_id, p_action, p_entity_type, p_record_id, p_entity_key,
+    p_request_id, p_source, p_old_data, p_new_data
+  )
+  returning id into v_id;
+  return v_id;
+end;
+$$;
+
+alter function public.write_audit(text, uuid, text, text, uuid, text, uuid, text, jsonb, jsonb) owner to postgres;
+revoke all on function public.write_audit(text, uuid, text, text, uuid, text, uuid, text, jsonb, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.write_audit(text, uuid, text, text, uuid, text, uuid, text, jsonb, jsonb)
+  to authenticated;
+
+-- is_admin ya está definida en 002_rls_policies.sql. Se vuelve a declarar con
+-- create or replace por coherencia (no cambia el comportamiento).
+create or replace function public.is_admin(p_required_role text default 'editor')
+returns boolean
 language sql
 stable
-set search_path = public
+set search_path = ''
 as $$
-  with attendees as (
-    select
-      (value->>'id') as attendee_id,
-      (value->>'name') as name,
-      (value->>'surname') as surname,
-      (value->>'birth_date') as birth_date,
-      (value->>'age_at_event')::integer as age_at_event,
-      (value->>'category') as category,
-      (value->>'after_lunch')::boolean as after_lunch
-    from jsonb_array_elements(p_attendees) as value
-  ),
-  categorized as (
-    select
-      a.*,
-      case
-        -- Niño 2-10 años tiene prioridad absoluta sobre post-almuerzo
-        when a.age_at_event is not null and a.age_at_event between 2 and 10 then 'nino'
-        when a.after_lunch then 'post-almuerzo'
-        when a.category is not null then a.category
-        when a.age_at_event is not null and a.age_at_event <= 1 then 'bebe'
-        when a.age_at_event is not null and a.age_at_event >= 11 then 'adulto'
-        else null
-      end as determined_category
-    from attendees a
-  ),
-  priced as (
-    select
-      c.*,
-      coalesce((
-        select r.price
-        from public.pricing_rules r
-        where r.category = c.determined_category
-          and r.active = true
-        limit 1
-      ), 0) as price_applied
-    from categorized c
-  )
-  select jsonb_build_object(
-    'per_person', (
-      select jsonb_agg(
-        jsonb_build_object(
-          'attendee_id', p.attendee_id,
-          'name', p.name,
-          'surname', p.surname,
-          'category', p.determined_category,
-          'price', p.price_applied,
-          'after_lunch', p.after_lunch
-        )
-        order by p.attendee_id
+  select exists (
+    select 1 from public.admin_profiles
+    where id = auth.uid()
+      and active = true
+      and (
+        (p_required_role = 'editor' and role in ('editor', 'owner'))
+        or (p_required_role = 'owner' and role = 'owner')
       )
-      from priced p
-    ),
-    'total_attendees', (select count(*) from priced),
-    'paying_attendees', (select count(*) from priced where price_applied > 0),
-    'grand_total', (select coalesce(sum(price_applied), 0) from priced),
-    'after_lunch_total', (select coalesce(sum(price_applied), 0) from priced where after_lunch)
   );
 $$;
-
--- Función: registrar auditoría de operación administrativa
--- Requiere sesión autenticada con rol de admin (verificada por RLS en audit_logs)
-create or replace function public.audit_log(
-  p_action text,
-  p_table_name text,
-  p_record_id uuid,
-  p_old_values jsonb,
-  p_new_values jsonb
-)
-returns void
-language sql
-stable
-set search_path = public
-as $$
-  insert into public.audit_logs (admin_id, action, table_name, record_id, old_values, new_values)
-  values (auth.uid(), p_action, p_table_name, p_record_id, p_old_values, p_new_values);
-$$;
+alter function public.is_admin(text) owner to postgres;
+revoke all on function public.is_admin(text) from public, anon;
+grant execute on function public.is_admin(text) to authenticated;

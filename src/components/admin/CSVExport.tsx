@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Download, Filter } from 'lucide-react';
-import { getGuests } from '../../lib/supabase';
+import { getGuests } from '../../lib/data-service';
 
 export default function CSVExport() {
   const [loading, setLoading] = useState(false);

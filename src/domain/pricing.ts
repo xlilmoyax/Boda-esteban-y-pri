@@ -21,10 +21,10 @@ import type { PriceRule, Attendee, CalculationResult, PriceCategoryId } from '..
 /**
  * Determina la categoría de precio aplicable a un asistente.
  * Prioridad:
- * 1. Niño (2-10 años) → siempre $50.000, incluso después del almuerzo.
- * 2. Adulto después del almuerzo → $70.000.
- * 3. Adulto desde el comienzo → $130.000.
- * 4. Menor de 2 años → sin categoría definida (devuelve null).
+ * 1. Bebé (0-1 años) → siempre $0, prioridad absoluta sobre cualquier horario.
+ * 2. Niño (2-10 años) → siempre $50.000, incluso después del almuerzo.
+ * 3. Adulto después del almuerzo → $70.000 (solo si no es bebé ni niño).
+ * 4. Adulto desde el comienzo → $130.000.
  *
  * No se asignan dos categorías a una misma persona.
  */
@@ -33,13 +33,23 @@ export function classifyAttendee(
   afterLunch: boolean,
   rules: PriceRule[]
 ): { categoryId: PriceCategoryId | null; rule: PriceRule | null } {
+  const babyRule = rules.find((r) => r.category === 'bebe' && r.active);
   const childRule = rules.find((r) => r.category === 'nino' && r.active);
   const postLunchRule = rules.find(
     (r) => r.category === 'post-almuerzo' && r.active
   );
   const adultRule = rules.find((r) => r.category === 'adulto' && r.active);
 
-  // 1. Niño de 2 a 10 años: prioridad absoluta, cualquiera sea el horario
+  // 1. Bebé de 0 a 1 años: prioridad absoluta, cualquiera sea el horario
+  if (
+    babyRule &&
+    age >= (babyRule.min_age ?? 0) &&
+    age <= (babyRule.max_age ?? 1)
+  ) {
+    return { categoryId: 'bebe', rule: babyRule };
+  }
+
+  // 2. Niño de 2 a 10 años: prioridad absoluta, cualquiera sea el horario
   if (
     childRule &&
     age >= (childRule.min_age ?? 2) &&
@@ -48,17 +58,17 @@ export function classifyAttendee(
     return { categoryId: 'nino', rule: childRule };
   }
 
-  // 2. Adulto después del almuerzo (solo aplica a adultos, no a niños)
-  if (afterLunch && postLunchRule) {
+  // 3. Adulto después del almuerzo (solo aplica a adultos, no a bebés ni niños)
+  if (afterLunch && postLunchRule && age >= (adultRule?.min_age ?? 11)) {
     return { categoryId: 'post-almuerzo', rule: postLunchRule };
   }
 
-  // 3. Adulto desde el comienzo
+  // 4. Adulto desde el comienzo
   if (adultRule && age >= (adultRule.min_age ?? 11)) {
     return { categoryId: 'adulto', rule: adultRule };
   }
 
-  // 4. Sin categoría definida (menor de 2 años o fuera de rango)
+  // 5. Sin categoría definida (edad no especificada o fuera de rango válido)
   return { categoryId: null, rule: null };
 }
 
@@ -69,7 +79,10 @@ export function calculateIndividualPrice(
   attendee: Attendee,
   rules: PriceRule[]
 ): { categoryId: PriceCategoryId | null; price: number; rule: PriceRule | null } {
-  const age = attendee.age_at_event ?? 0;
+  const age = attendee.age_at_event;
+  if (age === null) {
+    return { categoryId: null, price: 0, rule: null };
+  }
   const { categoryId, rule } = classifyAttendee(
     age,
     Boolean(attendee.after_lunch),

@@ -122,6 +122,10 @@ const ind = calculateIndividualPrice(attendee({ age_at_event: 30 }), rules);
 assert(ind.categoryId === 'adulto', 'calculateIndividualPrice: adulto');
 assert(ind.price === 130000, 'calculateIndividualPrice: precio adulto 130000');
 
+const noAge = calculateIndividualPrice(attendee({ age_at_event: null }), rules);
+assert(noAge.categoryId === null, 'calculateIndividualPrice: edad ausente no se clasifica como bebé');
+assert(noAge.rule === null, 'calculateIndividualPrice: edad ausente no selecciona una regla');
+
 const indChild = calculateIndividualPrice(attendee({ age_at_event: 8 }), rules);
 assert(indChild.categoryId === 'nino', 'calculateIndividualPrice: niño');
 assert(indChild.price === 50000, 'calculateIndividualPrice: precio niño 50000');

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { calculateGroupTotal } from '../domain/pricing';
-import type { Attendee } from '../types';
+import { getPricingRules, registrarConfirmacion } from '../lib/data-service';
+import type { Attendee, PriceRule } from '../types';
 
 interface ConfirmacionViewProps {
   onNavigate: (path: string) => void;
@@ -15,6 +16,9 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calculation, setCalculation] = useState<ReturnType<typeof calculateGroupTotal> | null>(null);
+  const [confirmedBalanceDue, setConfirmedBalanceDue] = useState<number | null>(null);
+  const [pricingRules, setPricingRules] = useState<PriceRule[]>([]);
+  const [pricingError, setPricingError] = useState<string | null>(null);
 
   const [guestName, setGuestName] = useState('');
   const [guestSurname, setGuestSurname] = useState('');
@@ -24,6 +28,69 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
   const [songSuggestion, setSongSuggestion] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [dietaryOther, setDietaryOther] = useState('');
+  const requestIdRef = useRef<string | null>(null);
+  const requestFingerprintRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPricingRules()
+      .then((rules) => {
+        if (cancelled) return;
+        setPricingRules(rules);
+        setPricingError(
+          rules.length > 0 ? null : 'No hay reglas de precios activas para calcular el importe.'
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPricingError('No se pudieron cargar los precios. El importe se validará al enviar.');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const agesValid = attendees.length > 0 && attendees.every(
+      (attendee) =>
+        attendee.age_at_event !== null &&
+        Number.isInteger(attendee.age_at_event) &&
+        attendee.age_at_event >= 0 &&
+        attendee.age_at_event <= 120
+    );
+    if (pricingRules.length === 0) {
+      setCalculation(null);
+      return;
+    }
+    if (!agesValid) {
+      setCalculation(null);
+      setPricingError(null);
+      return;
+    }
+
+    const invalidRule = attendees.some((attendee) => {
+      const age = attendee.age_at_event;
+      if (age === null) return true;
+      const category =
+        age <= 1 ? 'bebe' : age <= 10 ? 'nino' : attendee.after_lunch ? 'post-almuerzo' : 'adulto';
+      const categoryRules = pricingRules.filter(
+        (rule) => rule.active && rule.category === category
+      );
+      if (categoryRules.length > 1) return true;
+      if (category === 'bebe') {
+        return categoryRules.some((rule) => Number(rule.price) !== 0);
+      }
+      return categoryRules.length !== 1;
+    });
+    if (invalidRule) {
+      setCalculation(null);
+      setPricingError('No hay una regla de precios válida para todos los asistentes.');
+      return;
+    }
+    setPricingError(null);
+    setCalculation(calculateGroupTotal(attendees, pricingRules));
+  }, [attendees, pricingRules]);
 
   const btnClass = (active: boolean) =>
     active
@@ -35,25 +102,23 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
       ...attendees,
       { id: String(Date.now()), guest_id: '', name: '', surname: '', birth_date: null, age_at_event: null, category: null, price_applied: 0, after_lunch: false, created_at: '', updated_at: '' },
     ]);
+    setCalculation(null);
   };
 
   const removeAttendee = (id: string) => {
-    setAttendees(attendees.filter((a) => a.id !== id));
+    const updatedAttendees = attendees.filter((a) => a.id !== id);
+    setAttendees(updatedAttendees);
   };
 
   const updateAttendee = (id: string, field: keyof Attendee, value: any) => {
-    setAttendees(attendees.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
-    recalculate();
+    const updatedAttendees = attendees.map((a) => (a.id === id ? { ...a, [field]: value } : a));
+    setAttendees(updatedAttendees);
   };
 
   const toggleDietary = (value: string) => {
     setDietaryRestrictions((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
-  };
-
-  const recalculate = () => {
-    setCalculation(calculateGroupTotal(attendees, []));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,9 +139,55 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
       if (attending === 'si' && attendees.some((a) => !a.name.trim() || !a.surname.trim())) {
         throw new Error('Completá nombre y apellido de todos los asistentes.');
       }
+      if (
+        attending === 'si' &&
+        attendees.some(
+          (a) =>
+            !Number.isInteger(a.age_at_event) ||
+            a.age_at_event === null ||
+            a.age_at_event < 0 ||
+            a.age_at_event > 120
+        )
+      ) {
+        throw new Error('Ingresá una edad entera entre 0 y 120 años para cada asistente.');
+      }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const attendeesForRpc = attending === 'si' ? attendees.map((a) => ({
+        name: a.name,
+        surname: a.surname,
+        ageAtEvent: a.age_at_event,
+        afterLunch: a.after_lunch,
+      })) : [];
+      const payload = {
+        guestName,
+        guestSurname,
+        guestPhone,
+        guestEmail,
+        guestAttending: attending === 'si',
+        guestSongSuggestion: songSuggestion,
+        guestDietaryRestrictions: dietaryRestrictions,
+        guestDietaryDetails: dietaryOther,
+        guestObservations: '',
+        attendees: attendeesForRpc,
+      };
+      const fingerprint = JSON.stringify(payload);
+      if (requestFingerprintRef.current !== fingerprint || !requestIdRef.current) {
+        requestFingerprintRef.current = fingerprint;
+        requestIdRef.current = crypto.randomUUID();
+      }
+      const requestId = requestIdRef.current;
+      if (!requestId) throw new Error('No se pudo identificar la solicitud. Intentá nuevamente.');
 
+      const result = await registrarConfirmacion({
+        ...payload,
+        requestId,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error ?? 'Error al registrar la confirmación.');
+      }
+
+      setConfirmedBalanceDue(result.balanceDue ?? null);
       setStep('success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar la asistencia.');
@@ -97,6 +208,18 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
           <p className="text-[#211916] mb-8">
             Tu confirmación de asistencia ha sido registrada correctamente. Te esperamos para celebrar con nosotras.
           </p>
+          {attending === 'si' && confirmedBalanceDue !== null && (
+            <p className="text-[#211916] mb-8">
+              Saldo calculado por el servidor:{' '}
+              <strong>
+                {new Intl.NumberFormat('es-AR', {
+                  style: 'currency',
+                  currency: 'ARS',
+                  maximumFractionDigits: 0,
+                }).format(confirmedBalanceDue)}
+              </strong>
+            </p>
+          )}
           <button
             onClick={() => onNavigate('/')}
             className="px-6 py-3 text-sm font-semibold text-white bg-[#4A071D] rounded-full hover:bg-[#672B32] transition-colors"
@@ -129,7 +252,7 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
   }
 
   return (
-    <section className="min-h-screen bg-[#F3F0EB] px-6 py-8">
+    <section className="wedding-form min-h-screen bg-[#F3F0EB] px-6 py-10">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-serif font-bold text-[#4A071D] mb-2">Confirmar asistencia</h1>
@@ -215,6 +338,7 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
                 type="text"
                 value={songSuggestion}
                 onChange={(e) => setSongSuggestion(e.target.value)}
+                maxLength={200}
                 className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
                 placeholder="Tu canción favorita para la fiesta"
               />
@@ -246,6 +370,7 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
                   type="text"
                   value={dietaryOther}
                   onChange={(e) => setDietaryOther(e.target.value)}
+                  maxLength={500}
                   className="w-full px-4 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
                   placeholder="Especificá otra restricción"
                 />
@@ -298,6 +423,9 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
                           <label className="block text-xs font-medium text-[#211916] mb-1">Edad en el evento</label>
                           <input
                             type="number"
+                            min={0}
+                            max={120}
+                            step={1}
                             value={a.age_at_event ?? ''}
                             onChange={(e) => updateAttendee(a.id, 'age_at_event', e.target.value ? Number(e.target.value) : null)}
                             className="w-full px-3 py-2 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none"
@@ -357,6 +485,10 @@ export default function ConfirmacionView({ onNavigate }: ConfirmacionViewProps) 
                 Los precios son estimados y se confirman al momento del pago.
               </p>
             </div>
+          )}
+
+          {pricingError && attending === 'si' && (
+            <p className="text-sm text-rose-700" role="status">{pricingError}</p>
           )}
 
           <button

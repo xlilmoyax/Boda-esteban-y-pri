@@ -1,105 +1,109 @@
-import { useState } from 'react';
-import { AlertTriangle, Mail, Lock } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Lock } from 'lucide-react';
+import { authenticateAdmin } from '../lib/data-service';
+import { getGoogleClientId, isAppsScriptConfigured } from '../lib/apps-script-client';
+import type { AdminProfile } from '../types';
 
 interface AdminLoginViewProps {
   onNavigate: (path: string) => void;
+  onAuthenticated: (profile: AdminProfile) => void;
+  sessionError?: string | null;
 }
 
-export default function AdminLoginView({ onNavigate }: AdminLoginViewProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function AdminLoginView({ onNavigate, onAuthenticated, sessionError }: AdminLoginViewProps) {
+  const buttonRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
+  useEffect(() => {
+    if (!isAppsScriptConfigured || !buttonRef.current) return;
+    let active = true;
+    const renderGoogleButton = () => {
+      if (!active || !buttonRef.current || !window.google?.accounts?.id) return;
+      window.google.accounts.id.initialize({
+        client_id: getGoogleClientId(),
+        callback: async ({ credential }) => {
+          if (!active || !credential) {
+            setError('Google no devolvió una credencial válida.');
+            return;
+          }
+          setError(null);
+          setSubmitting(true);
+          try {
+            const profile = await authenticateAdmin(credential);
+            onAuthenticated(profile);
+          } catch (authError) {
+            setError(authError instanceof Error ? authError.message : 'No se pudo validar la cuenta Google.');
+          } finally {
+            if (active) setSubmitting(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+        width: 360,
+      });
+    };
 
-    try {
-      // Intentar login real mediante Supabase Auth si está configurado
-      const { supabase } = await import('../lib/supabaseClient');
-      if (supabase) {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (authError) throw authError;
-        // Redirigir al dashboard tras login exitoso
-        onNavigate('/dashboard-admin');
-        return;
-      }
-
-      // Fallback sin Supabase: solo modo desarrollo, sin credenciales hardcodeadas
-      setError('Supabase no está configurado. No se puede iniciar sesión.');
-    } catch (err) {
-      setError('Credenciales inválidas o error de conexión.');
-    } finally {
-      setSubmitting(false);
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = renderGoogleButton;
+      script.onerror = () => setError('No se pudo cargar el inicio de sesión de Google.');
+      document.head.appendChild(script);
     }
-  };
+    return () => { active = false; };
+  }, [onAuthenticated]);
 
   return (
-    <section className="min-h-screen bg-zinc-50 flex items-center justify-center px-6">
+    <section className="wedding-login min-h-[calc(100svh-76px)] flex items-center justify-center px-5 py-12">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-amber-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-6 h-6 text-white" />
+        <div className="text-center mb-7">
+          <div className="wedding-login__mark w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
+            <Lock className="w-5 h-5 text-amber-100" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-zinc-900 mb-2">Panel de administración</h2>
-          <p className="text-zinc-600">Iniciá sesión para gestionar la tarjeta de casamiento.</p>
+          <span className="wedding-eyebrow wedding-eyebrow--light">ESTEBAN &amp; PRISCILA</span>
+          <h2 className="text-4xl font-serif font-medium text-white mt-2 mb-2">Panel de administración</h2>
+          <p className="text-sm text-white/75">Iniciá sesión con una cuenta Google autorizada.</p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">Correo electrónico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                placeholder="admin@ejemplo.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                placeholder="••••••••"
-              />
-            </div>
+        <div className="wedding-login__card p-6 sm:p-8 rounded-2xl">
+          <div className="space-y-5">
             {error && (
-              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-700 flex items-center gap-2">
+              <div role="alert" className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-800 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" /> {error}
               </div>
             )}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full px-6 py-3 text-sm font-semibold text-white bg-amber-900 rounded-lg hover:bg-amber-800 disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-            >
-              {submitting ? (
-                <span className="flex items-center gap-2">
-                  Iniciando sesión...
-                </span>
-              ) : (
-                <>
-                  Iniciar sesión <Mail className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
+            {sessionError && !error && (
+              <div role="alert" className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-800 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" /> {sessionError}
+              </div>
+            )}
+            {isAppsScriptConfigured
+              ? <div ref={buttonRef} className={submitting ? 'pointer-events-none opacity-60' : 'flex justify-center'} />
+              : <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+                  Configurá la URL de Apps Script y el ID de cliente OAuth para habilitar el acceso.
+                </p>}
+          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-zinc-500">
+        <p className="mt-6 text-center text-xs text-white/70">
           Acceso exclusivo para administradores autorizados del evento.
         </p>
+        <button
+          type="button"
+          onClick={() => onNavigate('/')}
+          className="block mx-auto mt-4 text-xs text-white/80 hover:text-white underline underline-offset-4"
+        >
+          Volver a la invitación
+        </button>
       </div>
     </section>
   );

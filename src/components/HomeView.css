@@ -1,0 +1,570 @@
+﻿/* Invitación Esteban & Priscila — estilos independientes */
+.wedding-home {
+  --wh-wine: #48121c;
+  --wh-wine-dark: #260910;
+  --wh-paper: #f4f0e8;
+  --wh-ink: #30231f;
+  --wh-gold: #bd9854;
+  color: var(--wh-ink);
+  background: var(--wh-paper);
+  font-family: "Lato", sans-serif;
+  overflow: hidden;
+}
+
+.wedding-home * { box-sizing: border-box; }
+.wedding-home img { display: block; max-width: 100%; }
+.wedding-home a { color: inherit; text-decoration: none; }
+.wedding-home button { font: inherit; }
+
+.wh-script {
+  font-family: "Great Vibes", "Brush Script MT", cursive;
+  font-weight: 400;
+}
+
+.wh-serif {
+  font-family: "Cormorant Garamond", Georgia, serif;
+}
+
+.wh-kicker {
+  font-size: .7rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+
+.wh-section {
+  position: relative;
+  padding: clamp(4rem, 9vw, 7.5rem) 1.4rem;
+}
+
+.wh-inner {
+  width: min(100%, 1100px);
+  margin-inline: auto;
+}
+
+.wh-center { text-align: center; }
+
+.wh-eyebrow {
+  color: var(--wh-gold);
+  font-size: .7rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+
+.wh-title {
+  margin: .5rem 0 1rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1.08;
+}
+
+.wh-copy {
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: .96rem;
+  line-height: 1.95;
+}
+
+.wh-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem auto;
+  color: var(--wh-gold);
+}
+
+.wh-divider::before,
+.wh-divider::after {
+  content: "";
+  width: 55px;
+  height: 1px;
+  background: currentColor;
+  opacity: .7;
+}
+
+.wh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  min-height: 46px;
+  padding: .85rem 1.5rem;
+  border: 1px solid var(--wh-gold);
+  border-radius: 999px;
+  background: var(--wh-wine);
+  color: #fffaf1 !important;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: transform .2s ease, background .2s ease;
+}
+
+.wh-button:hover {
+  transform: translateY(-2px);
+  background: var(--wh-wine-dark);
+}
+
+.wh-button-light {
+  background: transparent;
+  color: var(--wh-wine) !important;
+}
+
+.wh-cover {
+  position: relative;
+  min-height: min(850px, 100svh);
+  min-height: min(850px, 100vh);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  isolation: isolate;
+  padding: 5rem 1.3rem 7.5rem;
+  text-align: center;
+  background: #382521;
+  color: #fffaf3;
+}
+
+.wh-cover-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+.wh-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(25, 13, 12, .12) 0%,
+    rgba(25, 13, 12, .08) 36%,
+    rgba(25, 13, 12, .62) 75%,
+    rgba(25, 13, 12, .88) 100%
+  );
+}
+
+.wh-cover-content {
+  width: min(100%, 760px);
+}
+
+.wh-cover-kicker {
+  margin: 0 0 .6rem;
+  font-size: .68rem;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+}
+
+.wh-cover-names {
+  margin: 0;
+  color: #fff8ec;
+  font-size: clamp(4rem, 13vw, 8.5rem);
+  line-height: .9;
+  text-shadow: 0 3px 24px rgba(0,0,0,.2);
+}
+
+.wh-cover-amp {
+  display: block;
+  margin: .25rem 0;
+  color: #e6c98d;
+  font-size: .54em;
+}
+
+.wh-cover-date {
+  margin: 1.4rem 0 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  letter-spacing: .24em;
+}
+
+.wh-seal {
+  position: absolute;
+  bottom: -43px;
+  left: 50%;
+  z-index: 3;
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 5px 8px rgba(38, 9, 16, .16));
+}
+
+.wh-cover-scroll {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fffaf3;
+  font-size: .58rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+
+.wh-countdown-section {
+  padding-top: 7rem;
+  background:
+    linear-gradient(rgba(248,245,239,.93), rgba(248,245,239,.96)),
+    url("/images/paper-texture.jpg") center / cover;
+}
+
+.wh-countdown-label {
+  margin: 0 0 .7rem;
+  color: var(--wh-wine);
+  font-size: .68rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+
+.wh-countdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.5rem, 3vw, 2rem);
+  width: min(100%, 680px);
+  margin: 2rem auto;
+}
+
+.wh-count-number {
+  color: var(--wh-wine);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(2.3rem, 8vw, 5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.wh-count-unit {
+  margin-top: .65rem;
+  color: #826e61;
+  font-size: .6rem;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+
+.wh-music {
+  width: min(100%, 520px);
+  margin: 3rem auto 0;
+  padding: 1.5rem;
+  border: 1px solid rgba(189,152,84,.45);
+  background: rgba(255,255,255,.35);
+}
+
+.wh-music-title {
+  margin: 0 0 .5rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.5rem;
+  font-style: italic;
+}
+
+.wh-music-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.wh-play {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--wh-gold);
+  border-radius: 50%;
+  background: var(--wh-wine);
+  color: white;
+  cursor: pointer;
+}
+
+.wh-music-note {
+  min-height: 1.2rem;
+  margin-top: .8rem;
+  color: #76645a;
+  font-size: .75rem;
+}
+
+.wh-verse {
+  position: relative;
+  background: var(--wh-wine);
+  color: #fff7ed;
+  background-image:
+    linear-gradient(rgba(50, 9, 19, .92), rgba(50, 9, 19, .94)),
+    url("/images/paper-texture.jpg");
+}
+
+.wh-verse blockquote {
+  max-width: 740px;
+  margin: 1.5rem auto;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.35rem, 3.6vw, 2.2rem);
+  font-style: italic;
+  line-height: 1.65;
+}
+
+.wh-verse-reference {
+  color: #dfc28b;
+  font-size: .68rem;
+  letter-spacing: .22em;
+}
+
+.wh-invitation {
+  background:
+    linear-gradient(rgba(248,245,239,.92), rgba(248,245,239,.95)),
+    url("/images/paper-texture.jpg") center / cover;
+}
+
+.wh-invitation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2rem, 7vw, 6rem);
+}
+
+.wh-invitation-art {
+  text-align: center;
+}
+
+.wh-invitation-script {
+  margin: 0;
+  color: var(--wh-wine);
+  font-size: clamp(4rem, 10vw, 7.4rem);
+  line-height: .95;
+}
+
+.wh-date-ghost {
+  margin: .7rem 0 0;
+  color: rgba(189,152,84,.23);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(3.8rem, 9vw, 6.5rem);
+  letter-spacing: -.06em;
+}
+
+.wh-invitation-info {
+  text-align: center;
+}
+
+.wh-date-strong {
+  margin: 1.4rem 0;
+  color: var(--wh-wine);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  letter-spacing: .06em;
+}
+
+.wh-detail {
+  margin: 1.2rem 0;
+  font-size: .86rem;
+  line-height: 1.8;
+}
+
+.wh-detail strong {
+  display: block;
+  margin-bottom: .25rem;
+  color: var(--wh-wine);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.wh-story {
+  background: var(--wh-wine-dark);
+  color: #fff7ed;
+  background-image:
+    linear-gradient(rgba(38,9,16,.95), rgba(38,9,16,.96)),
+    url("/images/paper-texture.jpg");
+}
+
+.wh-story .wh-title { color: #fff7ed; }
+
+.wh-story .wh-copy {
+  color: #eadfd3;
+}
+
+.wh-story-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.wh-story-photo {
+  width: 100%;
+  height: clamp(210px, 30vw, 360px);
+  object-fit: cover;
+  border: 5px solid rgba(255,255,255,.92);
+  box-shadow: 0 12px 30px rgba(0,0,0,.18);
+}
+
+.wh-story-photo:nth-child(2) {
+  transform: translateY(22px) rotate(2deg);
+}
+
+.wh-story-photo:nth-child(1) {
+  transform: rotate(-2deg);
+}
+
+.wh-promise {
+  background:
+    linear-gradient(rgba(248,245,239,.94), rgba(248,245,239,.94)),
+    url("/images/paper-texture.jpg") center / cover;
+}
+
+.wh-promise-photo {
+  width: min(100%, 640px);
+  max-height: 540px;
+  margin: 2.5rem auto 0;
+  object-fit: cover;
+  border: 8px solid #fffdf7;
+  box-shadow: 0 12px 35px rgba(45,25,18,.13);
+}
+
+.wh-details {
+  background: #e9e0d4;
+}
+
+.wh-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 3rem;
+  background: rgba(72,18,28,.18);
+  border: 1px solid rgba(72,18,28,.18);
+}
+
+.wh-detail-card {
+  padding: 2rem 1.2rem;
+  background: rgba(248,245,239,.78);
+  text-align: center;
+}
+
+.wh-detail-card h3 {
+  margin: .9rem 0 .6rem;
+  color: var(--wh-wine);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.wh-detail-card p {
+  margin: 0;
+  font-size: .82rem;
+  line-height: 1.8;
+}
+
+.wh-rsvp {
+  background: var(--wh-wine);
+  color: #fff7ed;
+  background-image:
+    linear-gradient(rgba(72,18,28,.94), rgba(72,18,28,.96)),
+    url("/images/paper-texture.jpg");
+}
+
+.wh-rsvp .wh-title { color: #fff7ed; }
+
+.wh-rsvp .wh-copy {
+  color: #eadfd3;
+}
+
+.wh-footer {
+  padding: 4rem 1.4rem;
+  background:
+    linear-gradient(rgba(248,245,239,.92), rgba(248,245,239,.95)),
+    url("/images/paper-texture.jpg") center / cover;
+  text-align: center;
+}
+
+.wh-footer-photo {
+  width: min(100%, 650px);
+  max-height: 400px;
+  margin: 0 auto 3rem;
+  object-fit: cover;
+  filter: grayscale(100%);
+  border-radius: 3px;
+}
+
+.wh-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  width: min(100%, 620px);
+  margin: 2.5rem auto;
+}
+
+.wh-contact h3 {
+  margin: 0 0 .75rem;
+  color: var(--wh-wine);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.wh-contact p {
+  margin: .45rem 0;
+  font-size: .82rem;
+  overflow-wrap: anywhere;
+}
+
+.wh-footer-end {
+  margin-top: 3rem;
+  color: var(--wh-wine);
+  font-family: "Great Vibes", cursive;
+  font-size: clamp(3rem, 7vw, 4.5rem);
+}
+
+.wh-footer-date {
+  margin-top: 1rem;
+  color: #77665a;
+  font-size: .65rem;
+  letter-spacing: .2em;
+}
+
+@media (max-width: 700px) {
+  .wh-cover {
+    min-height: 86svh;
+    padding-bottom: 6.5rem;
+  }
+
+  .wh-cover-photo { object-position: 54% center; }
+
+  .wh-invitation-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .wh-invitation-script { font-size: 5rem; }
+
+  .wh-story-gallery {
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+  }
+
+  .wh-story-photo { height: 240px; }
+
+  .wh-story-photo:nth-child(3) {
+    grid-column: 1 / -1;
+    width: 78%;
+    height: 260px;
+    margin-inline: auto;
+    transform: rotate(-1deg);
+  }
+
+  .wh-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wh-detail-card { padding: 1.6rem 1rem; }
+
+  .wh-contact-grid { gap: 1rem; }
+
+  .wh-contact p { font-size: .73rem; }
+}
+
+@media (max-width: 390px) {
+  .wh-countdown { gap: .25rem; }
+  .wh-count-number { font-size: 2rem; }
+  .wh-count-unit { font-size: .52rem; letter-spacing: .08em; }
+  .wh-contact-grid { grid-template-columns: 1fr; }
+}

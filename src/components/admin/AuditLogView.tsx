@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { ShieldAlert } from 'lucide-react';
-import { getAuditLogs } from '../../lib/supabase';
+import { getAuditLogs } from '../../lib/data-service';
 import type { AuditLog } from '../../types';
 
 export default function AuditLogView() {
@@ -30,15 +30,22 @@ export default function AuditLogView() {
 
   const actionLabel = (a: string) => {
     const labels: { [key: string]: string } = {
-      create_guest: 'Alta de invitado',
-      update_guest: 'Edición de invitado',
-      delete_guest: 'Eliminación de invitado',
-      update_attendance: 'Cambio de asistencia',
-      create_payment: 'Registro de pago',
-      verify_payment: 'Verificación de pago',
-      reject_payment: 'Rechazo de pago',
-      update_setting: 'Cambio de configuración',
-      update_pricing_rule: 'Cambio de precio',
+      create_registration: 'Alta de familia',
+      update_registration_details: 'Edición de familia y RSVP',
+      update_rsvp_status: 'Cambio de confirmación',
+      soft_delete_registration: 'Baja de familia',
+      restore_registration: 'Restauración de familia',
+      soft_delete_attendee: 'Baja de asistente',
+      restore_attendee: 'Restauración de asistente',
+      update_attendee: 'Edición de asistente',
+      update_registration_rsvp_details: 'Edición de datos RSVP',
+      update_event_public_config: 'Cambio de información del evento',
+      activate_pricing_version: 'Activación de tarifas',
+      save_invitation_draft: 'Guardado de borrador',
+      publish_invitation_revision: 'Publicación de invitación',
+      restore_invitation_revision: 'Restauración de revisión',
+      set_admin_role: 'Cambio de rol administrativo',
+      set_admin_active: 'Cambio de estado administrativo',
     };
     return labels[a] || a;
   };
@@ -72,9 +79,9 @@ export default function AuditLogView() {
               <tr className="border-b border-[#4A071D]/10">
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Fecha</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Acción</th>
-                <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Tabla</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Entidad</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Registro</th>
-                <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Administrador</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Actor</th>
               </tr>
             </thead>
             <tbody>
@@ -84,9 +91,9 @@ export default function AuditLogView() {
                     {log.created_at.slice(0, 16).replace('T', ' ')}
                   </td>
                   <td className="px-4 py-3 text-[#24130E] text-sm font-medium">{actionLabel(log.action)}</td>
-                  <td className="px-4 py-3 text-[#211916] text-sm">{log.table_name}</td>
-                  <td className="px-4 py-3 text-[#211916] text-sm">{log.record_id || '—'}</td>
-                  <td className="px-4 py-3 text-[#211916] text-sm">{log.admin_id || 'sistema'}</td>
+                  <td className="px-4 py-3 text-[#211916] text-sm">{log.entity_type}</td>
+                  <td className="px-4 py-3 text-[#211916] text-sm">{log.record_id || log.entity_key || '—'}</td>
+                  <td className="px-4 py-3 text-[#211916] text-sm">{log.actor_type}{log.actor_id ? ` · ${log.actor_id}` : ''}</td>
                 </tr>
               ))}
               {logs.length === 0 && (
@@ -102,7 +109,7 @@ export default function AuditLogView() {
       </div>
 
       <div className="text-xs text-[#211916]/40">
-        Todas las operaciones administrativas (altas, ediciones, eliminaciones, cambios de precio, cambios de estado de pago) se registran automáticamente con fecha, hora y responsable.
+        Las operaciones importantes se registran en la base de datos junto con cada cambio; la interfaz no puede insertar ni modificar registros de auditoría.
       </div>
     </div>
   );

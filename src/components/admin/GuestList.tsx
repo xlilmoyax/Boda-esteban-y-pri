@@ -4,30 +4,20 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Users, UserPlus, Trash2, ChevronRight } from 'lucide-react';
-import { getGuests, createGuest, updateGuest, deleteGuest, createAuditLog } from '../../lib/supabase';
-
-interface GuestRow {
-  id: string;
-  name: string;
-  surname: string;
-  phone: string | null;
-  email: string | null;
-  attending: boolean | null;
-  created_at: string;
-  attendees?: any[];
-  payment_records?: any[];
-}
+import { Search, Users, UserPlus, Trash2, ChevronRight, RotateCcw } from 'lucide-react';
+import { getGuests, createGuest, deleteGuest, restoreGuest } from '../../lib/data-service';
+import type { Guest } from '../../types';
 
 interface GuestListProps {
-  currentAdminId: string | null;
+  onOpenFamily: (id: string) => void;
 }
 
-export default function GuestList({ currentAdminId }: GuestListProps) {
-  const [guests, setGuests] = useState<GuestRow[]>([]);
+export default function GuestList({ onOpenFamily }: GuestListProps) {
+  const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [attendingFilter, setAttendingFilter] = useState<'all' | 'si' | 'no'>('all');
+  const [showDeleted, setShowDeleted] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [newGuest, setNewGuest] = useState({ name: '', surname: '', phone: '', email: '' });
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +27,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
       setLoading(true);
       const { guests: data } = await getGuests({
         search: search || undefined,
+        includeDeleted: showDeleted,
         limit: 100,
       });
       setGuests(data);
@@ -49,7 +40,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
 
   useEffect(() => {
     loadGuests();
-  }, [search, attendingFilter]);
+  }, [search, attendingFilter, showDeleted]);
 
   const filteredGuests = guests.filter((g) => {
     if (attendingFilter === 'si') return g.attending === true;
@@ -64,65 +55,34 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
         ...newGuest,
         attending: null,
         song_suggestion: null,
-        dietary_restrictions: null,
-        dietary_other: null,
+        dietary_restrictions: [],
+        dietary_details: null,
         observations: null,
       });
       setShowForm(false);
       setNewGuest({ name: '', surname: '', phone: '', email: '' });
       await loadGuests();
-      if (currentAdminId) {
-        await createAuditLog({
-          admin_id: currentAdminId,
-          action: 'create_guest',
-          table_name: 'guests',
-          record_id: '',
-          old_values: null,
-          new_values: JSON.stringify(newGuest),
-        });
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear invitado');
     }
   };
 
-  const handleToggleAttending = async (guest: GuestRow) => {
-    try {
-      const newValue = guest.attending !== true;
-      await updateGuest(guest.id, { attending: newValue });
-      await loadGuests();
-      if (currentAdminId) {
-        await createAuditLog({
-          admin_id: currentAdminId,
-          action: 'update_attendance',
-          table_name: 'guests',
-          record_id: guest.id,
-          old_values: JSON.stringify({ attending: guest.attending }),
-          new_values: JSON.stringify({ attending: newValue }),
-        });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar asistencia');
-    }
-  };
-
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este invitado? Esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Dar de baja esta inscripción familiar? Se excluirá de los saldos activos.')) return;
     try {
       await deleteGuest(id);
       await loadGuests();
-      if (currentAdminId) {
-        await createAuditLog({
-          admin_id: currentAdminId,
-          action: 'delete_guest',
-          table_name: 'guests',
-          record_id: id,
-          old_values: null,
-          new_values: null,
-        });
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar invitado');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await restoreGuest(id);
+      await loadGuests();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al restaurar la inscripción familiar');
     }
   };
 
@@ -140,7 +100,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-[#4A071D]" />
-          <h2 className="font-serif text-xl font-bold text-[#24130E]">Gestión de Invitados</h2>
+          <h2 className="font-serif text-xl font-bold text-[#24130E]">Gestión de familias</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -170,6 +130,24 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
                 placeholder="Buscar por nombre o apellido..."
                 className="w-full px-4 py-2 pl-10 border border-[#672B32]/30 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none text-sm"
               />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeleted(false)}
+                className={`px-4 py-2 text-sm font-medium rounded border transition-colors ${
+                  !showDeleted ? 'border-[#4A071D] bg-[#4A071D] text-white' : 'border-[#672B32]/30 text-[#211916]'
+                }`}
+              >
+                Activas
+              </button>
+              <button
+                onClick={() => setShowDeleted(true)}
+                className={`px-4 py-2 text-sm font-medium rounded border transition-colors ${
+                  showDeleted ? 'border-[#4A071D] bg-[#4A071D] text-white' : 'border-[#672B32]/30 text-[#211916]'
+                }`}
+              >
+                Bajas lógicas
+              </button>
             </div>
             <div className="flex gap-2">
               <button
@@ -215,16 +193,17 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider">Email</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider text-center">Asistencia</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider text-center">Asistentes</th>
-                <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider text-center">Pago</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#211916] uppercase tracking-wider text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredGuests.map((guest) => (
-                <tr key={guest.id} className="border-b border-[#4A071D]/5 hover:bg-[#F3F0EB]/30 transition-colors">
+                <tr key={guest.id} className={`border-b border-[#4A071D]/5 hover:bg-[#F3F0EB]/30 transition-colors ${guest.deleted_at ? 'opacity-65' : ''}`}>
                   <td className="px-4 py-3">
                     <div className="font-medium text-[#24130E]">{guest.name} {guest.surname}</div>
-                    <div className="text-xs text-[#211916]/60">{guest.created_at.slice(0, 10)}</div>
+                    <div className="text-xs text-[#211916]/60">
+                      {guest.deleted_at ? `Baja: ${guest.deleted_at.slice(0, 10)}` : `Alta: ${guest.created_at.slice(0, 10)}`}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-[#211916]">{guest.phone || '—'}</td>
                   <td className="px-4 py-3 text-[#211916]">{guest.email || '—'}</td>
@@ -237,7 +216,6 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
                             ? 'bg-rose-50 text-rose-600 border border-rose-100'
                             : 'bg-zinc-100 text-zinc-500 border border-zinc-200'
                       }`}
-                      onClick={() => handleToggleAttending(guest)}
                     >
                       {guest.attending === true ? '✓ Sí' : guest.attending === false ? '✗ No' : '—'}
                     </span>
@@ -245,30 +223,37 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
                   <td className="px-4 py-3 text-center text-sm">
                     {(guest.attendees ?? []).length} persona(s)
                   </td>
-                  <td className="px-4 py-3 text-center text-sm">
-                    {(guest.payment_records ?? []).length} registro(s)
-                  </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggleAttending(guest)}
+                      onClick={() => onOpenFamily(guest.id)}
                       className="p-2 text-[#4A071D] hover:bg-[#4A071D]/10 rounded-full transition-colors"
-                      title="Cambiar asistencia"
+                      title="Ver y editar familia"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(guest.id)}
-                      className="p-2 text-rose-600 hover:bg-rose-50 rounded-full transition-colors"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {guest.deleted_at ? (
+                      <button
+                        onClick={() => handleRestore(guest.id)}
+                        className="p-2 text-emerald-700 hover:bg-emerald-50 rounded-full transition-colors"
+                        title="Restaurar familia"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleDelete(guest.id)}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-full transition-colors"
+                        title="Dar de baja"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
               {filteredGuests.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[#211916]/40">
+                  <td colSpan={6} className="px-4 py-8 text-center text-[#211916]/40">
                     No se encontraron invitados.
                   </td>
                 </tr>
@@ -287,6 +272,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
               <div className="flex gap-2">
                 <input
                   type="text"
+                  required
                   value={newGuest.name}
                   onChange={(e) => setNewGuest({ ...newGuest, name: e.target.value })}
                   placeholder="Nombre"
@@ -294,6 +280,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
                 />
                 <input
                   type="text"
+                  required
                   value={newGuest.surname}
                   onChange={(e) => setNewGuest({ ...newGuest, surname: e.target.value })}
                   placeholder="Apellido"
@@ -315,6 +302,7 @@ export default function GuestList({ currentAdminId }: GuestListProps) {
               <label className="block text-xs font-medium text-[#211916] mb-1">Correo electrónico</label>
               <input
                 type="email"
+                required
                 value={newGuest.email}
                 onChange={(e) => setNewGuest({ ...newGuest, email: e.target.value })}
                 placeholder="tu@email.com"

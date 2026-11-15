@@ -1,15 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import {
-  Guest,
-  Attendee,
-  PaymentRecord,
-  EventSetting,
-  AdminProfile,
-  AuditLog,
-  GalleryImage,
-  ContentSection,
-  PriceRule,
-} from '../types';
+import type { Database } from './database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -22,8 +12,6 @@ if (!isSupabaseConfigured) {
   );
 }
 
-export const supabase: SupabaseClient<any> | null = isSupabaseConfigured
-  ? createClient<any>(supabaseUrl!, supabaseAnonKey!)
+export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
+  ? createClient<Database>(supabaseUrl!, supabaseAnonKey!)
   : null;
-
-export type { Guest, Attendee, PaymentRecord, EventSetting, AdminProfile, AuditLog, GalleryImage, ContentSection, PriceRule };

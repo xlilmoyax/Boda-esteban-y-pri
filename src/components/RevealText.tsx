@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 type HeadingTag = 'h1' | 'h2' | 'h3' | 'p' | 'span';
 
 interface RevealTextProps {
@@ -5,9 +7,10 @@ interface RevealTextProps {
   className?: string;
   id?: string;
   text: string;
+  style?: CSSProperties;
 }
 
-export default function RevealText({ as: Tag = 'h2', className = '', id, text }: RevealTextProps) {
+export default function RevealText({ as: Tag = 'h2', className = '', id, text, style }: RevealTextProps) {
   let characterIndex = 0;
   const words = text.split(/(\s+)/).map((part, wordIndex) => {
     if (/^\s+$/.test(part)) return part;
@@ -28,7 +31,7 @@ export default function RevealText({ as: Tag = 'h2', className = '', id, text }:
   });
 
   return (
-    <Tag id={id} className={className} data-reveal data-reveal-letters aria-label={text}>
+    <Tag id={id} className={className} data-reveal data-reveal-letters aria-label={text} style={style}>
       <span aria-hidden="true">{words}</span>
     </Tag>
   );

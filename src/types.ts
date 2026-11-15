@@ -3,6 +3,8 @@
  * Modelo orientado al dominio de una sola tarjeta de casamiento.
  */
 
+import type { InvitationContent } from './domain/invitation-content';
+
 export type PriceCategoryId = 'adulto' | 'nino' | 'bebe' | 'post-almuerzo';
 
 export interface PriceRule {
@@ -28,11 +30,13 @@ export interface Guest {
   email: string | null;
   attending: boolean | null;
   song_suggestion: string | null;
-  dietary_restrictions: string | null;
-  dietary_other: string | null;
+  dietary_restrictions: string[];
+  dietary_details: string | null;
   observations: string | null;
   created_at: string;
   updated_at: string;
+  attendees?: Attendee[];
+  deleted_at?: string | null;
 }
 
 export interface Attendee {
@@ -45,72 +49,45 @@ export interface Attendee {
   category: PriceCategoryId | null;
   price_applied: number | null;
   after_lunch: boolean;
+  attending?: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface PaymentRecord {
-  id: string;
-  guest_id: string;
-  amount_informed: number;
-  amount_verified: number | null;
-  status: 'pending' | 'informed' | 'verified' | 'rejected';
-  payment_method: string | null;
-  reference: string | null;
-  notes: string | null;
-  informed_by: string | null;
-  verified_by: string | null;
-  informed_at: string | null;
-  verified_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface EventSetting {
-  key: string;
-  value: string;
-  description: string | null;
-  updated_at: string;
+  deleted_at?: string | null;
 }
 
 export interface AdminProfile {
   id: string;
   email: string;
-  full_name: string | null;
   role: 'owner' | 'editor';
-  active: boolean;
-  created_at: string;
-  last_sign_in_at: string | null;
+  active?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AuditLog {
   id: string;
-  admin_id: string | null;
+  actor_type: 'admin' | 'guest' | 'system';
+  actor_id: string | null;
   action: string;
-  table_name: string;
+  entity_type: string;
   record_id: string | null;
-  old_values: string | null;
-  new_values: string | null;
+  entity_key: string | null;
+  request_id: string | null;
+  source: string;
+  old_data: Record<string, unknown> | null;
+  new_data: Record<string, unknown> | null;
   created_at: string;
 }
 
-export interface GalleryImage {
+export interface InvitationRevisionRecord {
   id: string;
-  title: string;
-  storage_path: string;
-  public_url: string | null;
-  sort_order: number;
-  active: boolean;
+  version: number | null;
+  status: 'draft' | 'published' | 'archived';
+  content: InvitationContent;
+  created_by: string | null;
   created_at: string;
-}
-
-export interface ContentSection {
-  key: string;
-  title: string | null;
-  body: string | null;
-  visible: boolean;
-  sort_order: number;
   updated_at: string;
+  published_at: string | null;
 }
 
 export interface CalculationResult {

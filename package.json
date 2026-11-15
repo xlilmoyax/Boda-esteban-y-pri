@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "test": "echo \"No hay pruebas configuradas aún\" && exit 0"
+    "test": "tsx src/domain/pricing.test.ts && tsx src/domain/pricing.additional.test.ts && tsx src/domain/admin.security.test.ts && tsx src/domain/confirmacion.security.test.ts && tsx src/domain/invitation-content.test.ts && tsx src/domain/event-config.test.ts && tsx src/domain/rsvp-validation.test.ts && node apps-script/backend.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",
@@ -23,8 +23,10 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "playwright": "^1.64.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.15",
     "typescript": "~5.6.3",
     "vite": "^5.4.11"
   }

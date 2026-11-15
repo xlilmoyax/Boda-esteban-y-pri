@@ -1,16 +1,27 @@
-﻿import { useEffect, useState } from 'react';
-import { ArrowRight, Pause, Play } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, CalendarDays, ClipboardCheck, MapPin } from 'lucide-react';
 import RevealText from './RevealText';
-import { useWeddingMusic } from './WeddingMusic';
+import { DEFAULT_INVITATION_CONTENT } from '../domain/invitation-content';
+import type { InvitationContent } from '../domain/invitation-content';
+import {
+  getPublicInvitation,
+} from '../lib/data-service';
+import { isAppsScriptEndpointConfigured } from '../lib/apps-script-client';
+import {
+  DEFAULT_PUBLIC_EVENT_CONFIG,
+  formatWeddingDate,
+  resolvePublicEventConfig,
+  weddingCountdownTimestamp,
+} from '../domain/event-config';
+import type { PublicEventConfig } from '../domain/event-config';
+import type { PriceRule } from '../types';
 
 interface HomeViewProps {
   onNavigate: (path: string) => void;
 }
 
-const eventDate = new Date('2027-09-26T15:00:00-03:00');
-
-function getCountdown() {
-  const remaining = Math.max(0, eventDate.getTime() - Date.now());
+function getCountdown(config: PublicEventConfig) {
+  const remaining = Math.max(0, weddingCountdownTimestamp(config) - Date.now());
   return [
     { value: Math.floor(remaining / (1000 * 60 * 60 * 24)), label: 'DÍAS' },
     { value: Math.floor((remaining / (1000 * 60 * 60)) % 24), label: 'HORAS' },
@@ -20,15 +31,81 @@ function getCountdown() {
 }
 
 export default function HomeView({ onNavigate }: HomeViewProps) {
-  const [countdown, setCountdown] = useState(getCountdown);
-  const { state: musicState, toggle: toggleMusic } = useWeddingMusic();
+  const [eventConfig, setEventConfig] = useState(DEFAULT_PUBLIC_EVENT_CONFIG);
+  const [countdown, setCountdown] = useState(() => getCountdown(DEFAULT_PUBLIC_EVENT_CONFIG));
+  const [pricingRules, setPricingRules] = useState<PriceRule[]>([]);
+  const [pricingError, setPricingError] = useState(false);
+  const [pricingLoading, setPricingLoading] = useState(true);
+  const [content, setContent] = useState<InvitationContent>(DEFAULT_INVITATION_CONTENT);
+  const [contentError, setContentError] = useState(false);
+  const [eventConfigError, setEventConfigError] = useState(false);
 
   useEffect(() => {
-    const updateCountdown = () => setCountdown(getCountdown());
+    if (!isAppsScriptEndpointConfigured) {
+      setPricingLoading(false);
+      setPricingError(true);
+      setEventConfigError(true);
+      setContentError(true);
+      return;
+    }
+    let active = true;
+    void getPublicInvitation().then(
+      (invitation) => {
+        if (!active) return;
+        setEventConfig(resolvePublicEventConfig(invitation.eventConfig));
+        setEventConfigError(false);
+        if (invitation.invitationContent) setContent(invitation.invitationContent);
+        else setContentError(true);
+        setPricingRules(invitation.pricingRules);
+        setPricingError(invitation.pricingRules.length === 0);
+        setPricingLoading(false);
+      },
+      (error: unknown) => {
+        if (!active) return;
+        console.error('Error al cargar la invitación pública:', error);
+        setEventConfigError(true);
+        setContentError(true);
+        setPricingError(true);
+        setPricingLoading(false);
+      }
+    );
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateCountdown = () => setCountdown(getCountdown(eventConfig));
     updateCountdown();
     const timer = window.setInterval(updateCountdown, 1000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [eventConfig]);
+
+  const sortedPricingRules = ['adulto', 'nino', 'post-almuerzo', 'bebe']
+    .map((category) => pricingRules.find((rule) => rule.category === category))
+    .filter((rule): rule is PriceRule => Boolean(rule));
+  const formatPrice = (rule: PriceRule) =>
+    Number(rule.price) === 0
+      ? 'Sin cargo'
+      : new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: rule.currency,
+          maximumFractionDigits: 0,
+        }).format(Number(rule.price));
+  const eventDateLong = formatWeddingDate(eventConfig.event_date, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const rsvpDeadline = formatWeddingDate(eventConfig.rsvp_deadline, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const [eventYear, eventMonth, eventDay] = eventConfig.event_date.split('-');
+  const eventDateShort = `${eventDay}.${eventMonth}.${eventYear.slice(-2)}`;
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('[data-reveal]');
@@ -56,16 +133,48 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
 
   return (
     <div className="wedding-page">
-      <section className="wedding-hero" aria-label="Portada de la invitación">
-        <div className="wedding-hero__image" />
-        <div className="wedding-hero__overlay" />
-        <img className="wedding-hero__seal" src="/images/recuperados/originales/wax-seal-original.png" alt="Sello de Esteban y Priscila" />
+      <section className="wedding-hero" aria-labelledby="event-date-heading">
+        <div className="wedding-hero__composition">
+          <div className="wedding-hero__message">
+            <span className="wedding-eyebrow">INFORMACIÓN DEL EVENTO</span>
+            <h1 id="event-date-heading">26 de septiembre <span>de 2027.</span></h1>
+            <p>Confirmá tu asistencia y consultá los datos importantes para acompañarnos.</p>
+            <button className="wedding-button wedding-hero__button" onClick={() => onNavigate('/confirmacion')}>
+              Confirmar asistencia <ArrowRight size={17} />
+            </button>
+          </div>
+          <div className="wedding-hero__visual" aria-label="Registro e información del evento">
+            <div className="wedding-hero__visual-card wedding-hero__visual-card--main">
+              <span className="wedding-hero__visual-icon"><ClipboardCheck aria-hidden="true" /></span>
+              <span className="wedding-hero__visual-copy">
+                <strong>Registro de asistencia</strong>
+                <span>Confirmá quiénes te acompañan</span>
+              </span>
+            </div>
+            <div className="wedding-hero__visual-card">
+              <CalendarDays aria-hidden="true" />
+              <span>Recepción y ceremonia</span>
+            </div>
+            <div className="wedding-hero__visual-card">
+              <MapPin aria-hidden="true" />
+              <span>Ubicación y cómo llegar</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="invitacion" className="wedding-invitation paper-texture">
-        <RevealText as="h1" className="wedding-invitation__names" text="Esteban & Priscila" />
-        <span className="wedding-eyebrow wedding-countdown__eyebrow">tiempo restante</span>
-        <RevealText className="wedding-countdown__title" text="HASTA EL SÍ." />
+        {contentError && (
+          <p role="status" className="wedding-content-fallback">
+            No pudimos cargar una actualización de la invitación. Se muestra la versión incorporada.
+          </p>
+        )}
+        {eventConfigError && (
+          <p role="status" className="wedding-content-fallback">
+            No pudimos cargar la configuración del evento. Se muestran los datos incorporados.
+          </p>
+        )}
+        <RevealText as="h2" className="wedding-countdown__title" text="Cuenta regresiva" />
         <div className="wedding-countdown" aria-label="Cuenta regresiva">
           {countdown.map((part) => (
             <div className="wedding-countdown__item" key={part.label}>
@@ -74,135 +183,43 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
             </div>
           ))}
         </div>
-        <section className="wedding-music" aria-labelledby="music-heading">
-          <RevealText id="music-heading" className="wedding-music__title" text="Dale play para reproducir nuestra canción" />
-          <div className="wedding-music__media" data-reveal>
-            <div id="wedding-youtube-player" aria-label="Video musical de Esteban y Priscila" />
-            <button
-              className="wedding-music__play"
-              type="button"
-              onClick={toggleMusic}
-              disabled={musicState === 'error'}
-              aria-label={musicState === 'playing' ? 'Pausar música' : 'Reproducir música'}
-              aria-pressed={musicState === 'playing'}
-            >
-              {musicState === 'playing' ? <Pause fill="currentColor" /> : <Play fill="currentColor" />}
-            </button>
-          </div>
-          <p className="wedding-music__status" role="status" aria-live="polite">
-            {musicState === 'playing' && 'Reproduciendo nuestra canción'}
-            {musicState === 'loading' && 'Intentando reproducir nuestra canción…'}
-            {musicState === 'paused' && 'La canción está en pausa.'}
-            {musicState === 'blocked' && 'El navegador bloqueó la reproducción automática. Toca reproducir para activar la música.'}
-            {musicState === 'error' && (
-              <>No se pudo cargar la canción. <a href="https://youtu.be/q25_mYOSa-Q" target="_blank" rel="noopener noreferrer">Abrir en YouTube</a>.</>
-            )}
-          </p>
-          <img className="wedding-music__rope" src="/images/recuperados/ornamentos/nudo-cuerda.svg" alt="" aria-hidden="true" />
-        </section>
-      </section>
-
-      <section id="versiculo" className="wedding-verse" aria-labelledby="verse-heading">
-        <div className="wedding-verse__ornament" aria-hidden="true"></div>
-        <h2 id="verse-heading" className="wedding-verse__title" data-reveal>
-          <span>“Mejores son dos que uno.</span>
-          <em>Porque si cayeren el uno levantará a su compañero</em>
-          <span>Y cordón de tres dobleces no se rompe pronto.”</span>
-        </h2>
-        <p className="wedding-verse__reference">ECLESIASTÉS 4: 9-12</p>
       </section>
 
       <section id="detalles" className="wedding-details paper-texture" aria-labelledby="detalles-heading">
-        <RevealText as="span" className="wedding-eyebrow wedding-details__eyebrow" text="¡Nos Casamos!" />
-        <RevealText id="detalles-heading" className="wedding-display wedding-details__title" text="26.09.27" />
-        <p className="wedding-details__intro">Estás cordialmente invitado a celebrar nuestra unión junto a nosotros.</p>
-        <div className="wedding-details__content">
-          <div className="wedding-details__info">
-            <article className="wedding-detail-card">
-              <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-calendario.svg" alt="" aria-hidden="true" data-reveal />
-              <h3>Recepción</h3>
-              <p>Domingo 26 de septiembre de 2027</p>
-              <strong>15:00 hs</strong>
-            </article>
-            <article className="wedding-detail-card">
-              <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-reloj.svg" alt="" aria-hidden="true" data-reveal />
-              <h3>Ceremonia</h3>
-              <p>16:00 hs</p>
-              <strong></strong>
-            </article>
-            <article className="wedding-detail-card">
-              <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-ubicacion.svg" alt="" aria-hidden="true" data-reveal />
-              <h3>BOLGHERT</h3>
-              <p>Santiago Derqui 703<br />Villa Allende</p>
-              <strong>Finaliza 23:00 hs</strong>
-            </article>
-          </div>
-          <a className="wedding-button wedding-button--light wedding-details__como-llegar" href="https://www.google.com/maps/search/?api=1&query=BOLGHERT%2C+Santiago+Derqui+703%2C+Villa+Allende" target="_blank" rel="noopener noreferrer">
-            ¿Cómo llegar?
-          </a>
-        </div>
-      </section>
-
-      <section id="historia" className="wedding-history" aria-labelledby="historia-heading">
-        <div className="wedding-history__moment">
-          <div className="wedding-history__moment-content">
-            <RevealText id="historia-heading" className="wedding-history__moment-title" text="Un encuentro casual" />
-            <p className="wedding-history__moment-copy">
-              Con la bendición de Dios y el amor como guía, comenzó nuestra historia. Ya nos conocíamos de vista, entre un “hola” y un “chau”, pero fue aquella tarde, al salir de la Escuela de Policía, cuando Dios cruzó nuestros caminos de una manera inesperada. Un viaje, un gesto y un nombre revelado… y así comenzó lo que Él ya había escrito para nosotros.
-            </p>
-          </div>
-          <div className="wedding-history__moment-photos">
-            <figure className="wedding-history__photo wedding-history__photo--tilted-left" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-1.jpg" alt="Esteban y Priscila en su encuentro casual" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
-            <figure className="wedding-history__photo wedding-history__photo--tilted-right" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-2.jpg" alt="Esteban y Priscila al comienzo de su historia" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
-          </div>
-        </div>
-
-        <div className="wedding-history__moment">
-          <div className="wedding-history__moment-content">
-            <RevealText id="historia-heading" className="wedding-history__moment-title" text="Un amor que eligió quedarse" />
-            <p className="wedding-history__moment-copy">
-              Aunque la vida nos puso a prueba y hubo momentos en los que parecía que todo estaba perdido, este amor siempre encontró la manera de permanecer. Porque, incluso cuando todo parecía llevarnos por caminos diferentes, entre todas las posibilidades, siempre encontramos una razón para volver a elegirnos.
-            </p>
-          </div>
-          <div className="wedding-history__moment-photos">
-            <figure className="wedding-history__photo wedding-history__photo--main" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-3.jpg" alt="Esteban y Priscila eligiéndose una vez más" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
-            <figure className="wedding-history__photo wedding-history__photo--tilted-left" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-5.jpg" alt="Un recuerdo de Esteban y Priscila juntos" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
-          </div>
-        </div>
-
-        <div className="wedding-history__moment">
-          <div className="wedding-history__moment-content">
-            <p className="wedding-history__handwritten">Que se volvió</p>
-            <h2 className="wedding-history__moment-title">Una promesa para siempre</h2>
-            <p className="wedding-history__moment-copy">
-              Primero amigos, luego novios y hoy, de la mano de Dios, elegimos ser uno para siempre y prometernos una vida juntos. Con el corazón lleno de amor y alegría, los invitamos a celebrar el comienzo de nuestra vida.
-            </p>
-            <p className="wedding-history__couple">Esteban y Priscila</p>
-          </div>
-          <div className="wedding-history__moment-photos">
-            <div className="wedding-history__aves">
-              <img src="/images/recuperados/originales/ornamento-fondo-3.png" alt="" aria-hidden="true" />
+        <div className="wedding-details__composition">
+          <div className="wedding-details__content">
+            <RevealText
+              as="h2"
+              id="detalles-heading"
+              className="wedding-display wedding-details__title"
+              text={eventDateShort}
+            />
+            <div className="wedding-details__info">
+              <article className="wedding-detail-card">
+                <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-calendario.svg" alt="" aria-hidden="true" data-reveal />
+                <h3>Recepción</h3>
+                {eventConfig.reception_name && <p>{eventConfig.reception_name}</p>}
+                <p>{eventDateLong}</p>
+                {eventConfig.reception_address && <p>{eventConfig.reception_address}</p>}
+                <strong>{eventConfig.reception_time} hs</strong>
+              </article>
+              <article className="wedding-detail-card">
+                <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-reloj.svg" alt="" aria-hidden="true" data-reveal />
+                <h3>Ceremonia</h3>
+                {eventConfig.ceremony_name && <p>{eventConfig.ceremony_name}</p>}
+                {eventConfig.ceremony_address && <p>{eventConfig.ceremony_address}</p>}
+                <p>{eventConfig.ceremony_time} hs</p>
+              </article>
+              <article className="wedding-detail-card">
+                <img className="wedding-detail__icon" src="/images/recuperados/ornamentos/icono-ubicacion.svg" alt="" aria-hidden="true" data-reveal />
+                <h3>{eventConfig.venue_name}</h3>
+                <p>{eventConfig.venue_address}</p>
+                <strong>Finaliza {eventConfig.event_end_time} hs</strong>
+              </article>
             </div>
-            <figure className="wedding-history__photo wedding-history__photo--main" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-4.jpg" alt="Esteban y Priscila celebrando su compromiso" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
-            <figure className="wedding-history__photo wedding-history__photo--tilted-right" data-reveal>
-              <img src="/images/recuperados/originales/historia-foto-6.jpg" alt="Un momento especial de Esteban y Priscila" />
-              <img className="wedding-history__clip" src="/images/recuperados/ornamentos/clip-papeleria.svg" alt="" aria-hidden="true" />
-            </figure>
+            <a className="wedding-button wedding-button--light wedding-details__como-llegar" href={eventConfig.directions_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${eventConfig.venue_name}, ${eventConfig.venue_address}`)}`} target="_blank" rel="noopener noreferrer">
+              ¿Cómo llegar?
+            </a>
           </div>
         </div>
       </section>
@@ -210,8 +227,8 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
       <section id="rsvp" className="wedding-rsvp" aria-labelledby="rsvp-heading">
         <img className="wedding-rsvp__icon" src="/images/recuperados/ornamentos/icono-asistencia.svg" alt="" aria-hidden="true" data-reveal />
         <span className="wedding-eyebrow wedding-eyebrow--light">ASISTENCIA</span>
-        <RevealText id="rsvp-heading" className="wedding-display wedding-display--light" text="Confirma tu presencia" />
-        <p className="wedding-rsvp__copy">Hasta el 11 de septiembre de 2027.</p>
+        <RevealText id="rsvp-heading" className="wedding-display wedding-display--light" text={content.rsvp_title} />
+        <p className="wedding-rsvp__copy">Hasta el {rsvpDeadline}.</p>
         <button className="wedding-button wedding-button--light" onClick={() => onNavigate('/confirmacion')}>
           Registro de asistencia <ArrowRight size={17} />
         </button>
@@ -220,66 +237,45 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
       <section className="wedding-dress-code" aria-labelledby="dress-code-heading">
         <img src="/images/recuperados/ornamentos/icono-traje.svg" alt="" aria-hidden="true" />
         <RevealText as="h2" id="dress-code-heading" text="DRESS CODE" />
-        <p>Elegante</p>
-      </section>
-
-      <section id="regalos" className="wedding-gifts" aria-labelledby="regalos-heading">
-        <img className="wedding-gifts__icon" src="/images/recuperados/ornamentos/icono-regalo.svg" alt="" aria-hidden="true" />
-        <RevealText as="h2" id="regalos-heading" className="wedding-display" text="REGALOS" />
-        <ul className="wedding-gifts__list">
-          <li><span aria-hidden="true">○○</span> Presencial en el casamiento</li>
-          <li><span aria-hidden="true">○○</span> Transferencia</li>
-        </ul>
-      </section>
-
-      <section className="wedding-registration paper-texture" aria-labelledby="registration-heading">
-        <h2 id="registration-heading">Registro de asistencia</h2>
-        <p>Registrá tu asistencia aquí por favor</p>
-        <button className="wedding-button wedding-button--light" onClick={() => onNavigate('/confirmacion')}>
-          Completar formulario <ArrowRight size={17} />
-        </button>
+        <p>{eventConfig.dress_code}</p>
       </section>
 
       <section id="precios" className="wedding-prices paper-texture" aria-labelledby="precios-heading">
         <RevealText as="h2" id="precios-heading" className="wedding-display" text="Tarjetas" />
-        <dl className="wedding-prices__list">
-          <div className="wedding-prices__item">
-            <dt>Adultos</dt>
-            <dd>$130.000</dd>
-          </div>
-          <div className="wedding-prices__item">
-            <dt>Niños de 2 a 10 años</dt>
-            <dd>$50.000</dd>
-          </div>
-          <div className="wedding-prices__item">
-            <dt>Después del almuerzo</dt>
-            <dd>$70.000</dd>
-          </div>
-          <div className="wedding-prices__item">
-            <dt>Bebés de 0 a 1 año</dt>
-            <dd>Sin cargo</dd>
-          </div>
-        </dl>
+        {pricingLoading && <p role="status">Cargando precios vigentes…</p>}
+        {!pricingLoading && pricingError && (
+          <p role="status" className="wedding-content-fallback">
+            No se pudieron cargar los precios vigentes. Consultá antes de transferir.
+          </p>
+        )}
+        {!pricingLoading && !pricingError && (
+          <dl className="wedding-prices__list">
+            {sortedPricingRules.map((rule) => (
+              <div className="wedding-prices__item" key={rule.id}>
+                <dt>{rule.category === 'bebe'
+                  ? 'Menores de 2 años'
+                  : rule.category === 'nino'
+                    ? `Niños de ${rule.min_age} a ${rule.max_age} años`
+                    : rule.label}</dt>
+                <dd>{formatPrice(rule)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <p className="wedding-prices__note">Los valores se actualizarán según el (IPC). Antes de transferir, verificá el precio vigente en esta sección.</p>
       </section>
 
-      <section className="wedding-bank-details" aria-label="Datos para transferencia">
-        <dl>
-          <div><dt>Alias:</dt><dd>bodatebypri.bbnk</dd></div>
-          <div><dt>CVU:</dt><dd>1430001713010373680017</dd></div>
-          <div><dt>Nombre:</dt><dd>Moya Priscila Abigail</dd></div>
-          <div><dt>Cuenta:</dt><dd>Brubank</dd></div>
-        </dl>
-      </section>
+      {eventConfig.bank_details && (
+        <section className="wedding-bank-details" aria-label="Datos para transferencia">
+          <dl>
+            <div><dt>Alias:</dt><dd>{eventConfig.bank_details.alias}</dd></div>
+            <div><dt>Nombre:</dt><dd>{eventConfig.bank_details.holder}</dd></div>
+            <div><dt>Banco:</dt><dd>{eventConfig.bank_details.bank}</dd></div>
+          </dl>
+        </section>
+      )}
 
       <footer className="wedding-footer paper-texture" id="footer">
-        <div className="wedding-footer__banner">
-          <img className="wedding-footer__photo" src="/images/recuperados/originales/ornamento-movil-2.png" alt="Esteban y Priscila compartiendo un momento juntos" />
-          <div className="wedding-footer__message">
-            <p>¡NOSOTROS NO PODEMOS ESPERAR</p>
-            <span>a compartir este momento con vos!</span>
-          </div>
-        </div>
         <div className="wedding-footer__contacts">
           <h2>CONTÁCTATE<br />CON NOSOTROS</h2>
           <div className="wedding-footer__contact">
@@ -293,10 +289,10 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
             <a href="mailto:iampriscilamoya1@gmail.com">iampriscilamoya1@gmail.com</a>
           </div>
           <div className="wedding-footer__welcome">
-            <h2>¡Te esperamos!</h2>
             <a href="/login-admin" className="wedding-footer__admin">Administración</a>
           </div>
         </div>
+        <p className="wedding-footer__closing">¡Te esperamos!</p>
       </footer>
     </div>
   );
