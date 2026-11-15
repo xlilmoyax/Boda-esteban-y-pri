@@ -7,7 +7,7 @@ import AdminDashboardView from './components/AdminDashboardView';
 import GuestDetail from './components/admin/GuestDetail';
 import NotFoundView from './components/NotFoundView';
 import { getCurrentAdminProfile } from './lib/data-service';
-import { hasAdminIdToken, isAppsScriptConfigured } from './lib/apps-script-client';
+import { supabase, isSupabaseConfigured } from './lib/data-service';
 import type { AdminProfile } from './types';
 
 type Route =
@@ -56,17 +56,9 @@ export default function App() {
   useEffect(() => {
     const path = window.location.pathname;
     const adminPath = path === '/dashboard-admin' || path.startsWith('/dashboard-admin/guest/');
-    if (!isAppsScriptConfigured) {
+    if (!isSupabaseConfigured) {
       if (adminPath) {
-        setAdminSessionError('Google Apps Script no está configurado; no se puede validar el acceso administrativo.');
-        setCurrentRoute('login-admin');
-        window.history.replaceState(null, '', '/login-admin');
-      }
-      return;
-    }
-    if (!hasAdminIdToken()) {
-      if (adminPath) {
-        setAdminSessionError('Iniciá sesión con una cuenta Google autorizada para continuar.');
+        setAdminSessionError('Supabase no está configurado; no se puede validar el acceso administrativo.');
         setCurrentRoute('login-admin');
         window.history.replaceState(null, '', '/login-admin');
       }
@@ -74,6 +66,15 @@ export default function App() {
     }
     let active = true;
     const validateAdminSession = async () => {
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (!session) {
+        if (adminPath) {
+          setAdminSessionError('Iniciá sesión con una cuenta autorizada para continuar.');
+          setCurrentRoute('login-admin');
+          window.history.replaceState(null, '', '/login-admin');
+        }
+        return;
+      }
       try {
         const profile = await getCurrentAdminProfile();
         if (!active) return;

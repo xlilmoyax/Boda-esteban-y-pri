@@ -6,7 +6,6 @@ import type { InvitationContent } from '../domain/invitation-content';
 import {
   getPublicInvitation,
 } from '../lib/data-service';
-import { isAppsScriptEndpointConfigured } from '../lib/apps-script-client';
 import {
   DEFAULT_PUBLIC_EVENT_CONFIG,
   formatWeddingDate,
@@ -41,13 +40,6 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
   const [eventConfigError, setEventConfigError] = useState(false);
 
   useEffect(() => {
-    if (!isAppsScriptEndpointConfigured) {
-      setPricingLoading(false);
-      setPricingError(true);
-      setEventConfigError(true);
-      setContentError(true);
-      return;
-    }
     let active = true;
     void getPublicInvitation().then(
       (invitation) => {

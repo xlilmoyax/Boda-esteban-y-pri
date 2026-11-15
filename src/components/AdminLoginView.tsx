@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Lock } from 'lucide-react';
 import { authenticateAdmin } from '../lib/data-service';
-import { getGoogleClientId, isAppsScriptConfigured } from '../lib/apps-script-client';
 import type { AdminProfile } from '../types';
 
 interface AdminLoginViewProps {
@@ -16,12 +15,12 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isAppsScriptConfigured || !buttonRef.current) return;
+    if (!buttonRef.current) return;
     let active = true;
     const renderGoogleButton = () => {
       if (!active || !buttonRef.current || !window.google?.accounts?.id) return;
       window.google.accounts.id.initialize({
-        client_id: getGoogleClientId(),
+        client_id: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID ?? '',
         callback: async ({ credential }) => {
           if (!active || !credential) {
             setError('Google no devolvió una credencial válida.');
@@ -86,11 +85,7 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
                 <AlertTriangle className="w-4 h-4" /> {sessionError}
               </div>
             )}
-            {isAppsScriptConfigured
-              ? <div ref={buttonRef} className={submitting ? 'pointer-events-none opacity-60' : 'flex justify-center'} />
-              : <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-                  Configurá la URL de Apps Script y el ID de cliente OAuth para habilitar el acceso.
-                </p>}
+            <div ref={buttonRef} className={submitting ? 'pointer-events-none opacity-60' : 'flex justify-center'} />
           </div>
         </div>
 
