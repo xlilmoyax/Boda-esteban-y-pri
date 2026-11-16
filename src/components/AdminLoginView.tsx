@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { AlertTriangle, Lock } from 'lucide-react';
-import { authenticateAdmin } from '../lib/data-service';
+import { requestAdminAccess, verifyAdminAccess } from '../lib/data-service';
 import type { AdminProfile } from '../types';
 
 interface AdminLoginViewProps {
@@ -9,57 +9,55 @@ interface AdminLoginViewProps {
   sessionError?: string | null;
 }
 
+interface LoginState {
+  step: 'email' | 'otp';
+  email: string;
+  code: string;
+}
+
 export default function AdminLoginView({ onNavigate, onAuthenticated, sessionError }: AdminLoginViewProps) {
-  const buttonRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [state, setState] = useState<LoginState>({ step: 'email', email: '', code: '' });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!buttonRef.current) return;
-    let active = true;
-    const renderGoogleButton = () => {
-      if (!active || !buttonRef.current || !window.google?.accounts?.id) return;
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID ?? '',
-        callback: async ({ credential }) => {
-          if (!active || !credential) {
-            setError('Google no devolvió una credencial válida.');
-            return;
-          }
-          setError(null);
-          setSubmitting(true);
-          try {
-            const profile = await authenticateAdmin(credential);
-            onAuthenticated(profile);
-          } catch (authError) {
-            setError(authError instanceof Error ? authError.message : 'No se pudo validar la cuenta Google.');
-          } finally {
-            if (active) setSubmitting(false);
-          }
-        },
-      });
-      window.google.accounts.id.renderButton(buttonRef.current, {
-        theme: 'outline',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
-        width: 360,
-      });
-    };
-
-    if (window.google?.accounts?.id) {
-      renderGoogleButton();
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = renderGoogleButton;
-      script.onerror = () => setError('No se pudo cargar el inicio de sesión de Google.');
-      document.head.appendChild(script);
+  const sendCode = async () => {
+    if (!state.email || !state.email.includes('@')) {
+      setError('Ingresá un correo electrónico válido.');
+      return;
     }
-    return () => { active = false; };
-  }, [onAuthenticated]);
+    setSubmitting(true);
+    setError(null);
+    try {
+      await requestAdminAccess(state.email);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar el código de acceso.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    if (!state.code || state.code.length < 4) {
+      setError('Ingresá el código de verificación.');
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const profile = await verifyAdminAccess(state.email, state.code);
+      onAuthenticated(profile);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Código de verificación incorrecto o vencido.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resendCode = async () => {
+    await sendCode();
+  };
 
   return (
     <section className="wedding-login min-h-[calc(100svh-76px)] flex items-center justify-center px-5 py-12">
@@ -70,7 +68,7 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
           </div>
           <span className="wedding-eyebrow wedding-eyebrow--light">ESTEBAN &amp; PRISCILA</span>
           <h2 className="text-4xl font-serif font-medium text-white mt-2 mb-2">Panel de administración</h2>
-          <p className="text-sm text-white/75">Iniciá sesión con una cuenta Google autorizada.</p>
+          <p className="text-sm text-white/75">Acceso exclusivo para administradores autorizados del evento.</p>
         </div>
 
         <div className="wedding-login__card p-6 sm:p-8 rounded-2xl">
@@ -85,7 +83,61 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
                 <AlertTriangle className="w-4 h-4" /> {sessionError}
               </div>
             )}
-            <div ref={buttonRef} className={submitting ? 'pointer-events-none opacity-60' : 'flex justify-center'} />
+
+            {state.step === 'email' ? (
+              <>
+                <label className="block text-sm font-medium text-white mb-1">Correo electrónico</label>
+                <div className="relative">
+                  <input
+                    ref={inputRef}
+                    type="email"
+                    value={state.email}
+                    onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
+                    placeholder="tu@email.com"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none text-white placeholder-white/50"
+                    disabled={submitting}
+                  />
+                </div>
+                <button
+                  onClick={sendCode}
+                  disabled={submitting || !state.email || !state.email.includes('@')}
+                  className="w-full py-2.5 bg-[#4A071D] text-white rounded-lg font-semibold disabled:opacity-60 transition-colors"
+                >
+                  {submitting ? 'Enviando código...' : 'Enviar código de acceso'}
+                </button>
+              </>
+            ) : (
+              <>
+                <label className="block text-sm font-medium text-white mb-1">Código de acceso</label>
+                <p className="text-sm text-white/70">Se envió un código a <span className="font-semibold text-white">{state.email}</span></p>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
+                  <input
+                    type="text"
+                    value={state.code}
+                    onChange={(e) => setState((prev) => ({ ...prev, code: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                    maxLength={6}
+                    placeholder="Código de 6 dígitos"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#4A071D] focus:border-[#4A071D] outline-none text-white placeholder-white/50 tracking-widest text-center"
+                    disabled={submitting}
+                  />
+                </div>
+                <button
+                  onClick={verifyCode}
+                  disabled={submitting || !state.code || state.code.length < 4}
+                  className="w-full py-2.5 bg-[#4A071D] text-white rounded-lg font-semibold disabled:opacity-60 transition-colors"
+                >
+                  {submitting ? 'Verificando...' : 'Verificar e ingresar'}
+                </button>
+                <button
+                  onClick={resendCode}
+                  disabled={submitting}
+                  className="w-full py-2 text-xs text-white/60 bg-transparent border border-white/20 rounded-lg hover:border-white/40 transition-colors"
+                >
+                  ¿No recibiste el código? Reenviar
+                </button>
+              </>
+            )}
           </div>
         </div>
 

@@ -252,20 +252,38 @@ export async function getCurrentAdminProfile(): Promise<AdminProfile | null> {
   return { id: row.id, email: row.email, role: row.role };
 }
 
-export async function authenticateAdmin(idToken: string): Promise<AdminProfile> {
-  if (!idToken || idToken.length > 10000) {
-    throw new Error('La credencial de administrador no es válida.');
+export async function requestAdminAccess(email: string): Promise<void> {
+  if (!email || !email.includes('@')) {
+    throw new Error('Ingresá un correo electrónico válido.');
   }
   const client = requireSupabase();
-  const { error: signInError } = await client.auth.signInWithIdToken({
-    provider: 'google',
-    token: idToken,
+  const { error } = await client.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/login-admin`,
+    },
   });
-  if (signInError) throw new Error('Esta cuenta no está habilitada como administradora.');
+  if (error) throw new Error(error.message ?? 'No se pudo enviar el código de acceso.');
+}
+
+export async function verifyAdminAccess(email: string, token: string): Promise<AdminProfile> {
+  if (!email || !email.includes('@')) {
+    throw new Error('Ingresá un correo electrónico válido.');
+  }
+  if (!token || token.length < 4) {
+    throw new Error('Ingresá el código de verificación.');
+  }
+  const client = requireSupabase();
+  const { error: verifyError } = await client.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  });
+  if (verifyError) throw new Error('Código de verificación incorrecto o vencido.');
   const profile = await getCurrentAdminProfile();
   if (!profile) {
     await client.auth.signOut();
-    throw new Error('Esta cuenta no está habilitada como administradora.');
+    throw new Error('Esta cuenta no está autorizada como administradora.');
   }
   return profile;
 }
