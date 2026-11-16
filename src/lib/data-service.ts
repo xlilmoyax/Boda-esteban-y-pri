@@ -261,6 +261,7 @@ export async function requestAdminAccess(email: string): Promise<void> {
     email,
     options: {
       emailRedirectTo: `${window.location.origin}/login-admin`,
+      shouldCreateUser: false,
     },
   });
   if (error) throw new Error(error.message ?? 'No se pudo enviar el código de acceso.');
