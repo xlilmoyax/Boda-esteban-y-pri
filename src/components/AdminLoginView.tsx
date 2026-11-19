@@ -37,7 +37,7 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
           <div className="wedding-login__mark w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
             <Lock className="w-5 h-5 text-amber-100" />
           </div>
-          <span className="wedding-eyebrow wedding-eyebrow--light">ESTEBAN &amp; PRISCILA</span>
+          <span className="wedding-eyebrow wedding-eyebrow--light">ESTEBAN & PRISCILA</span>
           <h2 className="text-4xl font-serif font-medium text-white mt-2 mb-2">Panel de administración</h2>
           <p className="text-sm text-white/90">Acceso exclusivo para administradores autorizados del evento.</p>
         </div>
@@ -54,7 +54,6 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" /> {sessionError}
               </div>
             )}
-
             <div>
               <label className="block text-sm font-medium text-[#241714] mb-1.5">Correo electrónico</label>
               <input
@@ -68,7 +67,6 @@ export default function AdminLoginView({ onNavigate, onAuthenticated, sessionErr
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-[#241714] mb-1.5">Contraseña</label>
               <div className="relative">
