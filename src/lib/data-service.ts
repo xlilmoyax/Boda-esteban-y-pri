@@ -1,8 +1,8 @@
 ﻿/**
- * Capa de acceso a datos â€” Arquitectura definitiva (Supabase).
+ * Capa de acceso a datos — Arquitectura definitiva (Supabase).
  *
  * Todas las operaciones pasan por el cliente de Supabase
- * (src/lib/supabaseClient.ts) o, en el caso del RSVP pÃºblico, por la Edge
+ * (src/lib/supabaseClient.ts) o, en el caso del RSVP público, por la Edge
  * Function `submit-rsvp` que protege la RPC `submit_public_rsvp` con
  * service_role.
  *
@@ -14,7 +14,7 @@
  *   invitation_revisions
  *
  * Las tablas legacy (guests, payment_records, pricing_history, event_settings)
- * y la funciÃ³n de confirmaciÃ³n del modelo legado NO se usan.
+ * y la función de confirmación del modelo legado NO se usan.
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -40,7 +40,7 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 if (!isSupabaseConfigured) {
   console.warn(
-    'Supabase no estÃ¡ configurado. DefinÃ­ VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local.'
+    'Supabase no está configurado. Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local.'
   );
 }
 
@@ -50,7 +50,7 @@ export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
 
 function requireSupabase(): SupabaseClient<Database> {
   if (!supabase) {
-    throw new Error('Supabase no estÃ¡ configurado. DefinÃ­ VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.');
+    throw new Error('Supabase no está configurado. Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.');
   }
   return supabase;
 }
@@ -63,7 +63,7 @@ function requireRecord(value: unknown, message: string): Record<string, unknown>
 }
 
 function mapPricingRules(value: unknown): PriceRule[] {
-  const prices = requireRecord(value, 'La respuesta pÃºblica de tarifas no es vÃ¡lida.');
+  const prices = requireRecord(value, 'La respuesta pública de tarifas no es válida.');
   const definitions: Array<{
     category: PriceCategoryId;
     label: string;
@@ -71,14 +71,14 @@ function mapPricingRules(value: unknown): PriceRule[] {
     max_age: number | null;
   }> = [
     { category: 'adulto', label: 'Adulto desde el comienzo', min_age: 11, max_age: null },
-    { category: 'nino', label: 'NiÃ±o', min_age: 2, max_age: 10 },
-    { category: 'bebe', label: 'BebÃ©', min_age: 0, max_age: 1 },
-    { category: 'post-almuerzo', label: 'Adulto despuÃ©s del almuerzo', min_age: 11, max_age: null },
+    { category: 'nino', label: 'Niño', min_age: 2, max_age: 10 },
+    { category: 'bebe', label: 'Bebé', min_age: 0, max_age: 1 },
+    { category: 'post-almuerzo', label: 'Adulto después del almuerzo', min_age: 11, max_age: null },
   ];
   return definitions.map((item) => {
     const price = prices[item.category];
     if (typeof price !== 'number' || !Number.isFinite(price) || price < 0) {
-      throw new Error(`Falta una tarifa vÃ¡lida para ${item.category}.`);
+      throw new Error(`Falta una tarifa válida para ${item.category}.`);
     }
     return {
       id: item.category,
@@ -160,12 +160,12 @@ function mapAttendeeRow(
 export async function getPublicInvitation(): Promise<PublicInvitationSnapshot> {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_public_invitation');
-  if (error) throw new Error(error.message ?? 'No se pudo cargar la invitaciÃ³n pÃºblica.');
-  const value = requireRecord(data, 'La respuesta pÃºblica no es vÃ¡lida.');
-  const event = requireRecord(value.event, 'La configuraciÃ³n pÃºblica del evento no es vÃ¡lida.');
+  if (error) throw new Error(error.message ?? 'No se pudo cargar la invitación pública.');
+  const value = requireRecord(data, 'La respuesta pública no es válida.');
+  const event = requireRecord(value.event, 'La configuración pública del evento no es válida.');
   const invitation = value.invitation;
   if (invitation !== null && invitation !== undefined && !isInvitationContent(invitation)) {
-    throw new Error('El contenido pÃºblico de la invitaciÃ³n no es vÃ¡lido.');
+    throw new Error('El contenido público de la invitación no es válido.');
   }
   return {
     eventConfig: resolvePublicEventConfig(event),
@@ -190,10 +190,10 @@ export async function getAdminEventConfig(): Promise<{
 }> {
   const client = requireSupabase();
   const { data, error } = await client.rpc('admin_get_event_config');
-  if (error) throw new Error(error.message ?? 'No se pudo cargar la configuraciÃ³n del evento.');
-  const value = requireRecord(data, 'La configuraciÃ³n del evento no es vÃ¡lida.');
-  const config = requireRecord(value.config, 'La configuraciÃ³n pÃºblica del evento no es vÃ¡lida.');
-  const bankFields = requireRecord(value.bankFields, 'Los datos bancarios no son vÃ¡lidos.');
+  if (error) throw new Error(error.message ?? 'No se pudo cargar la configuración del evento.');
+  const value = requireRecord(data, 'La configuración del evento no es válida.');
+  const config = requireRecord(value.config, 'La configuración pública del evento no es válida.');
+  const bankFields = requireRecord(value.bankFields, 'Los datos bancarios no son válidos.');
   return {
     config: resolvePublicEventConfig({
       ...config,
@@ -216,7 +216,7 @@ export async function updateEventPublicConfig(patch: Record<string, unknown>): P
   const { error } = await client.rpc('admin_update_event_public_config', {
     p_patch: patch as unknown as Json,
   });
-  if (error) throw new Error(error.message ?? 'No se pudo actualizar la configuraciÃ³n pÃºblica.');
+  if (error) throw new Error(error.message ?? 'No se pudo actualizar la configuración pública.');
 }
 
 export async function ownerPublishPricingVersion(
@@ -228,9 +228,9 @@ export async function ownerPublishPricingVersion(
     p_rules: rules as unknown as Json,
     p_reason: reason,
   });
-  if (error) throw new Error(error.message ?? 'No se pudo publicar la versiÃ³n tarifaria.');
+  if (error) throw new Error(error.message ?? 'No se pudo publicar la versión tarifaria.');
   if (!Number.isInteger(data) || data < 1) {
-    throw new Error('El servicio no confirmÃ³ una versiÃ³n tarifaria.');
+    throw new Error('El servicio no confirmó una versión tarifaria.');
   }
   return data;
 }
@@ -247,44 +247,28 @@ export async function getCurrentAdminProfile(): Promise<AdminProfile | null> {
     typeof row.email !== 'string' ||
     (row.role !== 'owner' && row.role !== 'editor')
   ) {
-    throw new Error('El perfil administrativo recibido no es vÃ¡lido.');
+    throw new Error('El perfil administrativo recibido no es válido.');
   }
   return { id: row.id, email: row.email, role: row.role };
 }
 
-export async function requestAdminAccess(email: string): Promise<void> {
+export async function authenticateAdmin(email: string, password: string): Promise<AdminProfile> {
   if (!email || !email.includes('@')) {
-    throw new Error('IngresÃ¡ un correo electrÃ³nico vÃ¡lido.');
+    throw new Error('Ingresá un correo electrónico válido.');
+  }
+  if (!password) {
+    throw new Error('Ingresá tu contraseña.');
   }
   const client = requireSupabase();
-  const { error } = await client.auth.signInWithOtp({
+  const { error } = await client.auth.signInWithPassword({
     email,
-    options: {
-      emailRedirectTo: `${window.location.origin}/login-admin`,
-      shouldCreateUser: false,
-    },
+    password,
   });
-  if (error) throw new Error(error.message ?? 'No se pudo enviar el cÃ³digo de acceso.');
-}
-
-export async function verifyAdminAccess(email: string, token: string): Promise<AdminProfile> {
-  if (!email || !email.includes('@')) {
-    throw new Error('IngresÃ¡ un correo electrÃ³nico vÃ¡lido.');
-  }
-  if (!token || token.length < 4) {
-    throw new Error('IngresÃ¡ el cÃ³digo de verificaciÃ³n.');
-  }
-  const client = requireSupabase();
-  const { error: verifyError } = await client.auth.verifyOtp({
-    email,
-    token,
-    type: 'email',
-  });
-  if (verifyError) throw new Error('CÃ³digo de verificaciÃ³n incorrecto o vencido.');
+  if (error) throw new Error(error.message ?? 'Credenciales inválidas.');
   const profile = await getCurrentAdminProfile();
   if (!profile) {
     await client.auth.signOut();
-    throw new Error('Esta cuenta no estÃ¡ autorizada como administradora.');
+    throw new Error('Esta cuenta no está habilitada como administradora.');
   }
   return profile;
 }
@@ -334,7 +318,7 @@ export async function getDashboardSummary(): Promise<AdminDashboardSummary> {
   const client = requireSupabase();
   const { data, error } = await client.rpc('admin_get_dashboard_summary');
   if (error) throw new Error(error.message ?? 'No se pudo cargar el resumen del panel.');
-  const value = requireRecord(data, 'El resumen del panel no es vÃ¡lido.');
+  const value = requireRecord(data, 'El resumen del panel no es válido.');
   return {
     family_count: Number(value.family_count ?? 0),
     confirmed_family_count: Number(value.confirmed_family_count ?? 0),
@@ -365,7 +349,7 @@ export async function getAuditLogs(limit = 50): Promise<AuditLog[]> {
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit);
-  if (error) throw new Error(error.message ?? 'No se pudieron cargar los registros de auditorÃ­a.');
+  if (error) throw new Error(error.message ?? 'No se pudieron cargar los registros de auditoría.');
   return (data ?? []).map((row) => ({
     id: row.id,
     actor_type: row.actor_type,
@@ -383,7 +367,7 @@ export async function getAuditLogs(limit = 50): Promise<AuditLog[]> {
 }
 
 /* ------------------------------------------------------------------ */
-/* Inscripciones (registrations) â€” reemplaza el modelo legacy guests   */
+/* Inscripciones (registrations) – reemplaza el modelo legacy guests   */
 /* ------------------------------------------------------------------ */
 
 export interface GuestFilters {
@@ -473,18 +457,18 @@ export async function createGuest(
     })),
     p_observations: data.observations || null,
   });
-  if (error) throw new Error(error.message ?? 'No se pudo crear la inscripciÃ³n.');
-  const row = requireRecord(inserted, 'La respuesta de creaciÃ³n no es vÃ¡lida.');
+  if (error) throw new Error(error.message ?? 'No se pudo crear la inscripción.');
+  const row = requireRecord(inserted, 'La respuesta de creación no es válida.');
   const registrationId = String(row.registration_id ?? '');
   if (!registrationId) {
-    throw new Error('No se pudo crear la inscripciÃ³n.');
+    throw new Error('No se pudo crear la inscripción.');
   }
   const { data: reg, error: regError } = await client
     .from('registrations')
     .select('*')
     .eq('id', registrationId)
     .single();
-  if (regError) throw new Error(regError.message ?? 'No se pudo leer la inscripciÃ³n creada.');
+  if (regError) throw new Error(regError.message ?? 'No se pudo leer la inscripción creada.');
   return mapRegistrationRow(reg as Database['public']['Tables']['registrations']['Row']);
 }
 
@@ -502,9 +486,9 @@ export async function updateGuest(id: string, updates: Partial<Guest>): Promise<
     p_dietary_restrictions: updates.dietary_restrictions ?? [],
     p_dietary_details: updates.dietary_details ?? null,
   });
-  if (error) throw new Error(error.message ?? 'No se pudo actualizar la inscripciÃ³n.');
+  if (error) throw new Error(error.message ?? 'No se pudo actualizar la inscripción.');
   return getGuestById(id).then((g) => {
-    if (!g) throw new Error('InscripciÃ³n no encontrada tras actualizar.');
+    if (!g) throw new Error('Inscripción no encontrada tras actualizar.');
     return g;
   });
 }
@@ -513,15 +497,15 @@ export async function deleteGuest(id: string): Promise<void> {
   const client = requireSupabase();
   const { error } = await client.rpc('admin_soft_delete_registration', {
     p_id: id,
-    p_reason: 'Eliminado desde el panel de administraciÃ³n.',
+    p_reason: 'Eliminado desde el panel de administración.',
   });
-  if (error) throw new Error(error.message ?? 'No se pudo eliminar la inscripciÃ³n.');
+  if (error) throw new Error(error.message ?? 'No se pudo eliminar la inscripción.');
 }
 
 export async function restoreGuest(id: string): Promise<void> {
   const client = requireSupabase();
   const { error } = await client.rpc('admin_restore_registration', { p_id: id });
-  if (error) throw new Error(error.message ?? 'No se pudo restaurar la inscripciÃ³n.');
+  if (error) throw new Error(error.message ?? 'No se pudo restaurar la inscripción.');
 }
 
 /* ------------------------------------------------------------------ */
@@ -589,7 +573,7 @@ export async function deleteAttendee(id: string): Promise<void> {
   const client = requireSupabase();
   const { error } = await client.rpc('admin_soft_delete_attendee', {
     p_id: id,
-    p_reason: 'Eliminado desde el panel de administraciÃ³n.',
+    p_reason: 'Eliminado desde el panel de administración.',
   });
   if (error) throw new Error(error.message ?? 'No se pudo eliminar el asistente.');
 }
@@ -618,7 +602,7 @@ export async function getRegistrationBalance(
 }
 
 /* ------------------------------------------------------------------ */
-/* RSVP pÃºblico â€” Edge Function submit-rsvp                           */
+/* RSVP público – Edge Function submit-rsvp                           */
 /* ------------------------------------------------------------------ */
 
 export interface RegistrarConfirmacionInput {
@@ -655,7 +639,7 @@ export async function registrarConfirmacion(
   if (!url) {
     return {
       success: false,
-      error: 'Supabase no estÃ¡ configurado. No se puede enviar la confirmaciÃ³n.',
+      error: 'Supabase no está configurado. No se puede enviar la confirmación.',
     };
   }
 
@@ -689,18 +673,18 @@ export async function registrarConfirmacion(
     if (!response.ok) {
       return {
         success: false,
-        error: (result.error as string) ?? 'No se pudo registrar la confirmaciÃ³n.',
+        error: (result.error as string) ?? 'No se pudo registrar la confirmación.',
       };
     }
     if (result.success !== true) {
       return {
         success: false,
-        error: (result.error as string) ?? 'El servicio no confirmÃ³ el registro.',
+        error: (result.error as string) ?? 'El servicio no confirmó el registro.',
       };
     }
     return {
       success: true,
-      message: 'ConfirmaciÃ³n registrada correctamente.',
+      message: 'Confirmación registrada correctamente.',
       balanceDue: typeof result.balance_due === 'number' ? result.balance_due : undefined,
       includedAttendees:
         typeof result.included_attendees === 'number' ? result.included_attendees : undefined,
@@ -708,7 +692,7 @@ export async function registrarConfirmacion(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'No se pudo registrar la confirmaciÃ³n.',
+      error: error instanceof Error ? error.message : 'No se pudo registrar la confirmación.',
     };
   }
 }
@@ -718,11 +702,11 @@ export function calculateGroupAmount(attendees: Attendee[], rules: PriceRule[]) 
 }
 
 /* ------------------------------------------------------------------ */
-/* MantenciÃ³n de la sesiÃ³n de Google (legacy, no se usa en Supabase)   */
+/* Mantención de la sesión de Google (legacy, no se usa en Supabase)   */
 /* ------------------------------------------------------------------ */
 
 export function setGoogleAdminCredential(idToken: string): void {
-  // Mantido por compatibilidad; la sesiÃ³n de Supabase se gestiona con authenticateAdmin.
+  // Mantenido por compatibilidad; la sesión de Supabase se gestiona con authenticateAdmin.
   void idToken;
 }
 
@@ -745,5 +729,3 @@ export function isAppsScriptEndpointConfigured(): boolean {
 export function getGoogleClientId(): string {
   return import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID ?? '';
 }
-
-
