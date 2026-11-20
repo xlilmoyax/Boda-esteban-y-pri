@@ -1,0 +1,118 @@
+-- Migración 015: Corregir vulnerabilidades RLS en registrations y attendees
+-- Proyecto: Tarjeta de Casamiento — Esteban y Priscila
+-- Fecha: 2026-11-20
+--
+-- Problema: Políticas SELECT USING (true) y INSERT WITH CHECK (true) exponen
+-- datos de inscripciones y asistentes a usuarios autenticados no administradores.
+-- Además, anon puede ejecutar create_registration_core directamente,
+-- eludiendo submit_public_rsvp y sus controles de idempotencia.
+--
+-- =============================================
+-- 1. Eliminar políticas SELECT permisivas en registrations
+-- =============================================
+--
+-- Vulnerabilidad: registrations_select_authenticated con USING (true)
+-- permite a TODOS los authenticated (incluso sin perfil admin) leer
+-- TODAS las inscripciones, incluyendo datos personales.
+--
+-- Acción: Eliminar la política. Conservar registrations_read_admin
+-- que usa is_admin('editor') para acceso administrativa legítimo.
+--
+DROP POLICY IF EXISTS registrations_select_authenticated ON public.registrations;
+
+-- =============================================
+-- 2. Eliminar políticas SELECT permisivas en attendees
+-- =============================================
+--
+-- Vulnerabilidad: attendees_select_authenticated con USING (true)
+-- permite a TODOS los authenticated (incluso sin perfil admin) leer
+-- TODOS los asistentes, incluyendo datos personales.
+--
+-- Acción: Eliminar la política. Conservar attendees_read_admin
+-- que usa is_admin('editor') para acceso administrativa legítimo.
+--
+DROP POLICY IF EXISTS attendees_select_authenticated ON public.attendees;
+
+-- =============================================
+-- 3. Eliminar políticas INSERT directo permisivas
+-- =============================================
+--
+-- Vulnerabilidad: registrations_insert_authenticated y
+-- attendees_insert_authenticated con WITH CHECK (true) permiten
+-- inserciones sin validaciones a nivel de fila.
+--
+-- Comprobación: has_table_privilege confirmó que authenticated
+-- no tiene privilegio INSERT directo sobre las tablas a nivel SQL.
+-- Las escrituras ya pasan por las funciones RPC autorizadas
+-- (submit_public_rsvp, admin_create_registration, admin_add_attendee)
+-- que usan service_role o ejecución SECURITY DEFINER.
+--
+-- Acción: Eliminar ambas políticas. No otorgar INSERT directo como
+-- solución alternativa; el flujo continúa mediante RPCs.
+--
+DROP POLICY IF EXISTS registrations_insert_authenticated ON public.registrations;
+DROP POLICY IF EXISTS attendees_insert_authenticated ON public.attendees;
+
+-- =============================================
+-- 4. Revocar EXECUTE directo a roles públicos
+--    sobre public.create_registration_core
+-- =============================================
+--
+-- Vulnerabilidad: create_registration_core es SECURITY DEFINER y
+-- anon/authenticated tienen permiso EXECUTE. Esto permite que un usuario
+-- anónimo o autenticado invoque la función directamente como 'guest',
+-- eludiendo submit_public_rsvp y sus validaciones de idempotencia,
+-- bloqueo transaccional, cálculo de hash, control de duplicados,
+-- validación de contenido y auditoría.
+--
+-- Acción: Revocar EXECUTE a anon y authenticated. La función sigue siéndo
+-- invocable internamente por las funciones SECURITY DEFINER autorizadas
+-- (submit_public_rsvp, admin_create_registration, admin_add_attendee)
+-- ya que esas funciones se ejecutan con los permisos del propietario
+-- (postgres) y no se ven afectadas por la revocación de ejecuciones
+-- directas a roles públicos.
+--
+-- Nota sobre service_role: has_function_privilege confirmó que service_role
+-- no tiene EXECUTE directo sobre create_registration_core, por lo que no
+-- es necesario revocar en este rol.
+--
+REVOKE EXECUTE ON public.create_registration_core FROM anon;
+REVOKE EXECUTE ON public.create_registration_core FROM authenticated;
+
+-- =============================================
+-- 5. Verificación: políticas conservadas
+-- =============================================
+--
+-- Después de esta migración, las políticas restantes en las tablas son:
+--
+-- registrations:
+--   - registrations_read_admin: SELECT, authenticated, USING (is_admin('editor'::text))
+--                           --> Permite solo a editor/owner activos
+--
+-- attendees:
+--   - attendees_read_admin: SELECT, authenticated, USING (is_admin('editor'::text))
+--                           --> Permite solo a editor/owner activos
+--
+-- Todas las demás políticas (INSERT, otras tablas) se conservan sin cambios.
+--
+-- =============================================
+-- 6. Puntos de entrada preservados
+-- =============================================
+--
+-- Flujo público: Frontend → Edge Function submit-rsvp (service_role)
+--                → submit_public_rsvp (RPC SECURITY DEFINER)
+--                → create_registration_core (llamada interna SECURITY DEFINER)
+--                --> conserve idempotencia, bloqueo, validación, auditoría
+--
+-- Panel admin: admin_create_registration y admin_add_attendee
+--              (RPCs SECURITY DEFINER que comprueban is_admin('editor'))
+--              --> continúan invocando create_registration_core internamente
+--
+-- is_admin: función conservada tal cual (SECURITY INVOKER, sin cambios)
+--           --> lógica de roles editor/owner inalterada
+--
+-- =============================================
+-- Fin de migración 015
+-- No ejecutar cambios remotos directamente.
+-- Aplicar con: supabase db push --remote --yes (previo autorización)
+-- o ejecutar SQL manualmente en el proyecto unmsegdzihupqcihejut.
